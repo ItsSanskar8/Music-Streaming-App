@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(npm ls *)",
+      "Bash(npm run *)",
+      "Bash(python3 -m py_compile database.py models.py mood_engine.py auth.py main.py routes/__init__.py routes/auth.py routes/music.py routes/player.py)",
+      "Bash(pkill -f \"uvicorn main:app\")",
+      "Bash(pkill -f \"next dev\")"
+    ]
+  }
+}

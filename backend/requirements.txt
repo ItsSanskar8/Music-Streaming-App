@@ -1,0 +1,10 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+sqlalchemy==2.0.36
+pyjwt==2.10.1
+bcrypt==4.2.1
+httpx==0.28.1
+# yt-dlp MUST stay current — YouTube changes frequently break older releases.
+# Always install the latest (pip install --upgrade yt-dlp) if streaming 404s.
+yt-dlp>=2025.1.1
+textblob==0.18.0.post0
