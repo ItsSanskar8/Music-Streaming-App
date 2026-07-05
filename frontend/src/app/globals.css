@@ -3,18 +3,18 @@
 @tailwind utilities;
 
 /* ===================================================================== */
-/*  NOVA v2 — Design System                                              */
-/*  Deep, layered dark UI. Aurora/nebula glow + noise texture behind     */
-/*  glass slabs. CSS-3D tilt, cyan range inputs, skeleton shimmer.       */
+/*  NOVA — Design System                                                 */
+/*  Deep cinematic dark UI. Black + royal-blue + emerald/cyan aurora,     */
+/*  film-grain noise, frosted glass slabs, glowing accents & waveforms.   */
 /* ===================================================================== */
 
 :root {
-  --ink: #050507;
-  --navy: #0a0a1a;
-  --lavender: #c4b5fd;
-  --cyan: #22d3ee;
+  --ink: #050505; /* page background */
+  --navy: #0a0f1f; /* secondary deep-space */
+  --blue: #245bff; /* royal blue accent */
+  --cyan: #00f5d4; /* emerald/cyan glow */
+  --violet: #7c5cff; /* supporting depth accent */
   --rose: #fb7185;
-  --gold: #fbbf24;
 }
 
 html,
@@ -24,7 +24,7 @@ body {
 
 body {
   background-color: var(--ink);
-  color: #f5f5f7;
+  color: #ffffff;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.011em;
@@ -39,11 +39,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(196, 181, 253, 0.18);
+  background: rgba(0, 245, 212, 0.18);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(196, 181, 253, 0.32);
+  background: rgba(36, 91, 255, 0.4);
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -54,17 +54,20 @@ body {
 }
 
 @layer components {
-  /* Reusable frosted glass slab. */
+  /* Reusable frosted glass slabs. */
   .glass {
-    @apply border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-2xl;
+    @apply border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl shadow-glass;
   }
   .glass-strong {
-    @apply border border-white/[0.12] bg-white/[0.06] backdrop-blur-2xl shadow-2xl;
+    @apply border border-white/[0.12] bg-white/[0.06] backdrop-blur-2xl shadow-glass-lg;
+  }
+  /* Gradient chip / pill. */
+  .pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-medium text-white/70 backdrop-blur-xl;
   }
 }
 
 @layer utilities {
-  /* Preserve-3d + perspective helpers for TiltCard children. */
   .preserve-3d {
     transform-style: preserve-3d;
   }
@@ -74,10 +77,26 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  /* Cyan→blue glowing text. */
+  .text-glow {
+    text-shadow: 0 0 24px rgba(0, 245, 212, 0.45), 0 0 48px rgba(36, 91, 255, 0.25);
+  }
+  .text-gradient {
+    @apply bg-gradient-to-r from-white via-nova-cyan to-nova-blue bg-clip-text text-transparent;
+  }
+  /* Full-page vertical scroll-snap container for the landing sections. */
+  .snap-y-container {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+  .snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
 }
 
 /* ===================================================================== */
-/*  Aurora / Nebula background (fixed, behind everything)               */
+/*  Aurora / Nebula background (fixed, behind everything)                */
 /* ===================================================================== */
 .aurora {
   position: fixed;
@@ -85,10 +104,10 @@ body {
   z-index: -2;
   background-color: var(--ink);
   background-image:
-    radial-gradient(60rem 60rem at 12% 8%, rgba(196, 181, 253, 0.10), transparent 60%),
-    radial-gradient(50rem 50rem at 88% 18%, rgba(34, 211, 238, 0.10), transparent 60%),
-    radial-gradient(55rem 55rem at 70% 92%, rgba(251, 113, 133, 0.08), transparent 60%),
-    radial-gradient(45rem 45rem at 20% 85%, rgba(10, 10, 26, 0.9), transparent 65%);
+    radial-gradient(60rem 60rem at 12% 6%, rgba(36, 91, 255, 0.16), transparent 60%),
+    radial-gradient(52rem 52rem at 88% 16%, rgba(0, 245, 212, 0.12), transparent 60%),
+    radial-gradient(55rem 55rem at 72% 94%, rgba(124, 92, 255, 0.1), transparent 60%),
+    radial-gradient(45rem 45rem at 18% 88%, rgba(10, 15, 31, 0.9), transparent 65%);
   pointer-events: none;
 }
 
@@ -103,8 +122,7 @@ body {
 }
 
 /* ===================================================================== */
-/*  Range inputs (seek + volume) — cyan gradient track, white thumb.     */
-/*  The played-portion gradient is applied inline via `style` per input. */
+/*  Range inputs (seek + volume) — cyan/blue track, white glowing thumb.  */
 /* ===================================================================== */
 input[type="range"].nova-range {
   -webkit-appearance: none;
@@ -122,8 +140,8 @@ input[type="range"].nova-range::-webkit-slider-thumb {
   height: 14px;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.15), 0 2px 6px rgba(0, 0, 0, 0.6);
-  transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
+  box-shadow: 0 0 0 4px rgba(0, 245, 212, 0.18), 0 2px 8px rgba(0, 0, 0, 0.6);
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
 }
 input[type="range"].nova-range:hover::-webkit-slider-thumb {
   transform: scale(1.25);
@@ -134,20 +152,20 @@ input[type="range"].nova-range::-moz-range-thumb {
   border: none;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.15);
+  box-shadow: 0 0 0 4px rgba(0, 245, 212, 0.18);
 }
 
 /* ===================================================================== */
-/*  Keyframes                                                            */
+/*  Keyframes (CSS-side; Tailwind also defines float/waveform via config) */
 /* ===================================================================== */
 @keyframes nova-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
 @keyframes nova-pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.45); }
-  70% { box-shadow: 0 0 0 12px rgba(34, 211, 238, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(0, 245, 212, 0.45); }
+  70% { box-shadow: 0 0 0 12px rgba(0, 245, 212, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 245, 212, 0); }
 }
 @keyframes nova-shimmer {
   0% { background-position: -450px 0; }
@@ -173,7 +191,9 @@ input[type="range"].nova-range::-moz-range-thumb {
   animation: nova-shimmer 1.4s linear infinite;
 }
 
-/* CSS-only equalizer bars (used in Now Playing panel). */
+/* ===================================================================== */
+/*  CSS equalizer / waveform bars (blue→cyan gradient)                    */
+/* ===================================================================== */
 .eq {
   display: flex;
   align-items: flex-end;
@@ -183,7 +203,7 @@ input[type="range"].nova-range::-moz-range-thumb {
 .eq span {
   width: 4px;
   border-radius: 999px;
-  background: linear-gradient(to top, var(--lavender), var(--cyan));
+  background: linear-gradient(to top, var(--blue), var(--cyan));
   transform-origin: bottom;
   animation: nova-eq 0.9s ease-in-out infinite;
 }

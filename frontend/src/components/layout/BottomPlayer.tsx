@@ -68,7 +68,7 @@ export default function BottomPlayer() {
       initial={{ y: 40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-      className="fixed inset-x-0 bottom-0 z-40 h-24 border-t border-white/[0.08] bg-brand-ink/70 backdrop-blur-2xl"
+      className="fixed inset-x-0 bottom-0 z-40 h-24 border-t border-white/[0.08] bg-nova-bg2/70 shadow-[0_-8px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
     >
       <div className="mx-auto flex h-full max-w-[1700px] items-center gap-4 px-4 sm:px-6">
         {/* Track info */}
@@ -91,12 +91,12 @@ export default function BottomPlayer() {
               </div>
               <button
                 onClick={() => toggleLike(current)}
-                className="ml-1 hidden text-white/45 transition-colors hover:text-brand-rose sm:block"
+                className="ml-1 hidden text-white/45 transition-colors hover:text-nova-cyan sm:block"
                 aria-label="Like"
               >
                 <Heart
                   size={18}
-                  className={liked ? "fill-brand-rose text-brand-rose" : ""}
+                  className={liked ? "fill-nova-cyan text-nova-cyan" : ""}
                 />
               </button>
             </>
@@ -111,7 +111,7 @@ export default function BottomPlayer() {
             <button
               onClick={toggleShuffle}
               className={`hidden transition-colors sm:block ${
-                shuffle ? "text-brand-cyan" : "text-white/45 hover:text-white"
+                shuffle ? "text-nova-cyan" : "text-white/45 hover:text-white"
               }`}
               aria-label="Shuffle"
             >
@@ -128,7 +128,7 @@ export default function BottomPlayer() {
             <button
               onClick={togglePlay}
               disabled={!current}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105 disabled:opacity-40"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan text-black shadow-glow-cyan transition-transform hover:scale-105 disabled:opacity-40"
               aria-label={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? (
@@ -148,7 +148,7 @@ export default function BottomPlayer() {
             <button
               onClick={toggleRepeat}
               className={`hidden transition-colors sm:block ${
-                repeat ? "text-brand-cyan" : "text-white/45 hover:text-white"
+                repeat ? "text-nova-cyan" : "text-white/45 hover:text-white"
               }`}
               aria-label="Repeat"
             >
@@ -169,7 +169,7 @@ export default function BottomPlayer() {
               onChange={(e) => seek(Number(e.target.value))}
               className="nova-range flex-1"
               style={{
-                background: `linear-gradient(to right, #22D3EE ${progress}%, rgba(255,255,255,0.1) ${progress}%)`,
+                background: `linear-gradient(to right, #245BFF, #00F5D4 ${progress}%, rgba(255,255,255,0.1) ${progress}%)`,
               }}
               aria-label="Seek"
             />
@@ -184,7 +184,7 @@ export default function BottomPlayer() {
           <button
             onClick={handleDownload}
             disabled={!current || current?.isLocal || downloading}
-            className="text-white/45 transition-colors hover:text-brand-lavender disabled:opacity-40"
+            className="text-white/45 transition-colors hover:text-nova-blue disabled:opacity-40"
             aria-label="Download MP3"
             title={current?.isLocal ? "Local file" : "Download MP3"}
           >
@@ -197,7 +197,7 @@ export default function BottomPlayer() {
           <button
             onClick={toggleQueue}
             className={`transition-colors hover:text-white ${
-              queueOpen ? "text-brand-cyan" : "text-white/45"
+              queueOpen ? "text-nova-cyan" : "text-white/45"
             }`}
             aria-label="Toggle queue"
           >
@@ -206,7 +206,7 @@ export default function BottomPlayer() {
           <button
             onClick={toggleNowPlaying}
             className={`hidden transition-colors hover:text-white lg:block ${
-              nowPlayingOpen ? "text-brand-cyan" : "text-white/45"
+              nowPlayingOpen ? "text-nova-cyan" : "text-white/45"
             }`}
             aria-label="Toggle now playing panel"
           >
@@ -223,7 +223,7 @@ export default function BottomPlayer() {
               onChange={(e) => setVolume(Number(e.target.value))}
               className="nova-range flex-1"
               style={{
-                background: `linear-gradient(to right, #C4B5FD ${
+                background: `linear-gradient(to right, #00F5D4 ${
                   volume * 100
                 }%, rgba(255,255,255,0.1) ${volume * 100}%)`,
               }}

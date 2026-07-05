@@ -12,6 +12,8 @@ from database import Base, SessionLocal, engine
 from routes import auth as auth_routes
 from routes import music as music_routes
 from routes import player as player_routes
+from routes import playlists as playlist_routes
+from routes import likes as likes_routes
 
 
 @asynccontextmanager
@@ -45,6 +47,8 @@ app.add_middleware(
 app.include_router(auth_routes.router, prefix="/api/auth", tags=["auth"])
 app.include_router(music_routes.router, prefix="/api", tags=["music"])
 app.include_router(player_routes.router, prefix="/api", tags=["player"])
+app.include_router(playlist_routes.router, prefix="/api", tags=["playlists"])
+app.include_router(likes_routes.router, prefix="/api", tags=["likes"])
 
 
 @app.get("/api/health")

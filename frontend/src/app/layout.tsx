@@ -5,18 +5,14 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PlayerProvider } from "@/contexts/PlayerContext";
 import { UIProvider } from "@/contexts/UIContext";
-import Sidebar from "@/components/layout/Sidebar";
-import TopBar from "@/components/layout/TopBar";
-import BottomPlayer from "@/components/layout/BottomPlayer";
-import QueueDrawer from "@/components/layout/QueueDrawer";
-import RightNowPlayingPanel from "@/components/layout/RightNowPlayingPanel";
-import CommandPalette from "@/components/ui/CommandPalette";
+import AppShell from "@/components/layout/AppShell";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Nova — Music",
-  description: "A premium, dark-mode music streaming experience.",
+  title: "Nova — Feel Music In Another Dimension",
+  description:
+    "Nova transforms songs, albums, playlists, and moods into an immersive 3D music universe.",
 };
 
 export default function RootLayout({
@@ -26,8 +22,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="bg-nova-black font-sans text-nova-primary antialiased">
-        {/* Aurora / Nebula background */}
+      <body className="bg-nova-bg font-sans text-white antialiased">
+        {/* Aurora / Nebula background (fixed, behind everything) */}
         <div className="aurora" />
         <div className="noise" />
 
@@ -38,26 +34,16 @@ export default function RootLayout({
                 position="top-right"
                 toastOptions={{
                   style: {
-                    background: "rgba(10, 10, 26, 0.95)",
-                    color: "#F5F5F7",
+                    background: "rgba(10, 15, 31, 0.95)",
+                    color: "#FFFFFF",
                     border: "1px solid rgba(255, 255, 255, 0.1)",
                     backdropFilter: "blur(20px)",
                   },
                 }}
               />
-              <div className="flex min-h-screen">
-                {/* Sidebar/TopBar/BottomPlayer self-hide on landing + auth pages. */}
-                <Sidebar />
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <TopBar />
-                  {/* pb-28 clears the persistent 96px BottomPlayer. */}
-                  <main className="flex-1 pb-28">{children}</main>
-                </div>
-              </div>
-              <BottomPlayer />
-              <QueueDrawer />
-              <RightNowPlayingPanel />
-              <CommandPalette />
+              {/* AppShell renders the full chrome on app routes and nothing
+                  (bare children) on the public landing + auth routes. */}
+              <AppShell>{children}</AppShell>
             </UIProvider>
           </PlayerProvider>
         </AuthProvider>
