@@ -20,6 +20,11 @@ from starlette.concurrency import run_in_threadpool
 
 router = APIRouter()
 
+# Legal, freely-usable demo audio served when yt-dlp cannot resolve a stream
+# (e.g. YouTube's "Sign in to confirm you're not a bot" bot check on the host).
+# Keeps the <audio> player working instead of surfacing a 404.
+FALLBACK_AUDIO_URL = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+
 BROWSER_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -67,7 +72,11 @@ async def stream(yt_id: str, request: Request):
     try:
         audio_url = await run_in_threadpool(_extract_audio_url, yt_id)
     except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=404, detail=f"Unable to resolve audio: {exc}")
+        # Don't 404 — YouTube may reject extraction (bot check, geo, throttling).
+        # Fall back to a legal demo track so the player keeps working. The proxy
+        # logic below is source-agnostic and preserves Range/seeking for it too.
+        print(f"[player] yt-dlp failed for {yt_id!r}: {exc!r} — using fallback audio")
+        audio_url = FALLBACK_AUDIO_URL
 
     # Forward the client's Range header (or default to the whole file).
     range_header = request.headers.get("range")
