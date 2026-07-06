@@ -1,179 +1,154 @@
 "use client";
 
 // ============================================================================
-//  ParticleField v5 — Gentle snow-like particle system for page-wide
-//  background ambiance.
+//  ParticleField v10 — Roaming neon particles + atmosphere glow orbs.
 //
-//  Designed to run behind all landing page sections:
-//    • Soft, low-saturation ice-blue particles
-//    • Slow, gentle drift in all directions (snow/floating effect)
-//    • Large, transparent particles with size variation
-//    • Minimal rotation — just a subtle background ambiance
-//    • No connection lines (keeps it clean and subtle)
-//    • Low particle count for good performance
+//  Removed the searchlight beams. Now just:
+//    • 500 roaming neon particles floating independently like dust in light
+//    • 2 soft pulsing glow orbs for atmospheric depth
 // ============================================================================
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import type { Points } from "three";
+import type { Mesh, Points } from "three";
+
+// ── Neon palette ────────────────────────────────────────────────────────
+const NEON_RGB = [
+  [1.0, 0.08, 0.58], [0.14, 0.36, 1.0], [0.0, 0.96, 0.83],
+  [0.49, 0.36, 1.0], [1.0, 0.0, 1.0],   [0.22, 1.0, 0.08],
+  [1.0, 0.27, 0.0],
+] as const;
+
+function neonColor(i: number): [number, number, number] {
+  const len = NEON_RGB.length;
+  return NEON_RGB[Math.abs(Math.floor(((Math.sin(i * 47.11) * 1000) % 1) * len)) % len] as [number, number, number];
+}
 
 interface Props {
-  /** Total particles. Default 600 (keeps perf light for full-page usage). */
   count?: number;
 }
 
-export default function ParticleField({ count = 600 }: Props) {
-  const innerRef = useRef<Points>(null);
-  const outerRef = useRef<Points>(null);
+export default function ParticleField({ count = 500 }: Props) {
+  const pointRef = useRef<Points>(null);
+  const orb1 = useRef<Mesh>(null);
+  const orb2 = useRef<Mesh>(null);
 
-  // ── Generate particle data ────────────────────────────────────────────
-  // Two layers: a main inner cloud and a sparser outer halo, both with
-  // soft blue-white colours and gentle sizing.
-  const innerCount = Math.floor(count * 0.7);
-  const outerCount = count - innerCount;
-
-  const innerData = useMemo(() => {
-    const positions = new Float32Array(innerCount * 3);
-    const colors = new Float32Array(innerCount * 3);
-    const sizes = new Float32Array(innerCount);
-
-    for (let i = 0; i < innerCount; i++) {
-      // Loose sphere, spread 3–8 units
-      const r = 3 + ((Math.sin(i * 13.37) * 1000) % 1) * 5;
+  // ── Roaming particle data ─────────────────────────────────────────────
+  const particleCount = count;
+  const basePositions = useMemo(() => {
+    const arr = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      const r = 3 + ((Math.sin(i * 13.37) * 1000) % 1) * 16;
       const theta = i * 2.399963;
-      const phi = Math.acos(1 - (2 * (i + 0.5)) / innerCount);
-
-      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      positions[i * 3 + 2] = r * Math.cos(phi);
-
-      // Gentle ice-blue: very desaturated blue with slight cyan tint
-      const brightness = 0.6 + ((Math.sin(i * 7.777) * 1000) % 1) * 0.25;
-      colors[i * 3] = 0.55 + (1.0 - 0.55) * brightness * 0.2;
-      colors[i * 3 + 1] = 0.7 + (1.0 - 0.7) * brightness * 0.2;
-      colors[i * 3 + 2] = 0.95 + brightness * 0.05;
-
-      // Size: medium, with gentle variation
-      sizes[i] = 0.04 + ((Math.sin(i * 19.42) * 1000) % 1) * 0.06;
+      const phi = Math.acos(1 - (2 * (i + 0.5)) / particleCount);
+      arr[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      arr[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      arr[i * 3 + 2] = r * Math.cos(phi);
     }
+    return arr;
+  }, [particleCount]);
 
-    return { positions, colors, sizes };
-  }, [innerCount]);
-
-  const outerData = useMemo(() => {
-    const positions = new Float32Array(outerCount * 3);
-    const colors = new Float32Array(outerCount * 3);
-    const sizes = new Float32Array(outerCount);
-
-    for (let i = 0; i < outerCount; i++) {
-      // Wider spread: 7–12 units
-      const r = 7 + ((Math.sin(i * 29.07) * 1000) % 1) * 5;
-      const theta = i * 1.909859 + 1.5;
-      const phi = Math.acos(1 - (2 * (i + 0.5)) / outerCount);
-
-      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      positions[i * 3 + 2] = r * Math.cos(phi);
-
-      // Even more desaturated outer halo
-      colors[i * 3] = 0.6;
-      colors[i * 3 + 1] = 0.7;
-      colors[i * 3 + 2] = 0.95;
-
-      // Slightly larger for outer
-      sizes[i] = 0.06 + ((Math.sin(i * 27.1) * 1000) % 1) * 0.08;
+  const particlePhases = useMemo(() => {
+    const arr = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount * 3; i++) {
+      arr[i] = ((Math.sin(i * 7.777) * 1000) % 1) * Math.PI * 2;
     }
+    return arr;
+  }, [particleCount]);
 
-    return { positions, colors, sizes };
-  }, [outerCount]);
+  const colors = useMemo(() => {
+    const arr = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      const [r, g, b] = neonColor(i);
+      const bright = 0.6 + ((Math.sin(i * 23.45) * 1000) % 1) * 0.4;
+      arr[i * 3] = r * bright;
+      arr[i * 3 + 1] = g * bright;
+      arr[i * 3 + 2] = b * bright;
+    }
+    return arr;
+  }, [particleCount]);
 
-  // ── Animation loop — gentle drifting ─────────────────────────────────
-  useFrame((state, delta) => {
+  // ── Animation loop ────────────────────────────────────────────────────
+  useFrame((state) => {
     const t = state.clock.elapsedTime;
 
-    if (innerRef.current) {
-      // Very slow overall rotation — barely perceptible
-      innerRef.current.rotation.y += delta * 0.015;
-      innerRef.current.rotation.x = Math.sin(t * 0.03) * 0.03;
-      innerRef.current.rotation.z = Math.cos(t * 0.025) * 0.02;
+    // === Roaming particles: per-vertex independent drift ===
+    if (pointRef.current) {
+      const pos = pointRef.current.geometry.attributes.position.array as Float32Array;
+      for (let i = 0; i < particleCount * 3; i += 3) {
+        const p = particlePhases;
+        pos[i]     = basePositions[i]     + Math.sin(t * 0.2  + p[i])     * 1.2;
+        pos[i + 1] = basePositions[i + 1] + Math.sin(t * 0.15 + p[i + 1]) * 1.0;
+        pos[i + 2] = basePositions[i + 2] + Math.sin(t * 0.18 + p[i + 2]) * 1.4;
+      }
+      pointRef.current.geometry.attributes.position.needsUpdate = true;
     }
 
-    if (outerRef.current) {
-      // Opposite drift, even slower
-      outerRef.current.rotation.y -= delta * 0.008;
-      outerRef.current.rotation.x = Math.cos(t * 0.02) * 0.02;
+    // === Pulsing glow orbs ===
+    if (orb1.current) {
+      const s = 1 + Math.sin(t * 0.2) * 0.2;
+      orb1.current.scale.setScalar(s);
+      orb1.current.position.x = Math.sin(t * 0.08) * 6;
+      orb1.current.position.z = Math.cos(t * 0.08) * 6;
+    }
+    if (orb2.current) {
+      const s = 1 + Math.sin(t * 0.25 + 1) * 0.15;
+      orb2.current.scale.setScalar(s);
+      orb2.current.position.x = Math.sin(t * 0.06 + 2) * 7;
+      orb2.current.position.z = Math.cos(t * 0.06 + 2) * 7;
     }
   });
 
-  // ── Material config ───────────────────────────────────────────────────
-  const materialProps = {
-    transparent: true,
-    depthWrite: false,
-    sizeAttenuation: true,
-    blending: 2 as const, // AdditiveBlending
-  };
-
   return (
     <group renderOrder={-1}>
-      {/* Inner particles */}
-      <points ref={innerRef}>
+      {/* ============ ROAMING PARTICLES ============ */}
+      <points ref={pointRef}>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={innerCount}
-            array={innerData.positions}
+            count={particleCount}
+            array={new Float32Array(basePositions)}
             itemSize={3}
           />
           <bufferAttribute
             attach="attributes-color"
-            count={innerCount}
-            array={innerData.colors}
+            count={particleCount}
+            array={colors}
             itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-size"
-            count={innerCount}
-            array={innerData.sizes}
-            itemSize={1}
           />
         </bufferGeometry>
         <pointsMaterial
-          {...materialProps}
-          size={0.055}
+          transparent
+          depthWrite={false}
+          sizeAttenuation
+          blending={2}
+          size={0.07}
           vertexColors
-          opacity={0.25}
+          opacity={0.55}
         />
       </points>
 
-      {/* Outer particles — more transparent and slightly larger */}
-      <points ref={outerRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={outerCount}
-            array={outerData.positions}
-            itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-color"
-            count={outerCount}
-            array={outerData.colors}
-            itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-size"
-            count={outerCount}
-            array={outerData.sizes}
-            itemSize={1}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          {...materialProps}
-          size={0.09}
-          vertexColors
-          opacity={0.12}
+      {/* ============ ATMOSPHERE GLOW ORBS ============ */}
+      <mesh ref={orb1}>
+        <sphereGeometry args={[3.5, 20, 16]} />
+        <meshBasicMaterial
+          color="#FF1493"
+          transparent
+          opacity={0.06}
+          blending={2}
+          depthWrite={false}
         />
-      </points>
+      </mesh>
+      <mesh ref={orb2}>
+        <sphereGeometry args={[4, 20, 16]} />
+        <meshBasicMaterial
+          color="#245BFF"
+          transparent
+          opacity={0.05}
+          blending={2}
+          depthWrite={false}
+        />
+      </mesh>
     </group>
   );
 }

@@ -35,6 +35,7 @@ import {
   Waves,
 } from "lucide-react";
 import AnimatedWaveform from "@/components/ui/AnimatedWaveform";
+import ScrollProgress from "@/components/ui/ScrollProgress";
 
 const ThreeHeroScene = dynamic(() => import("@/components/3d/ThreeHeroScene"), {
   ssr: false,
@@ -200,8 +201,22 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const SECTIONS = [
+    { id: "hero", label: "Home" },
+    { id: "featured", label: "Featured" },
+    { id: "trending", label: "Trending" },
+    { id: "mood-match", label: "Mood Match" },
+    { id: "features", label: "Features" },
+    { id: "artists-albums", label: "Artists" },
+    { id: "player", label: "Player" },
+    { id: "collections", label: "Collections" },
+    { id: "cta", label: "Get Started" },
+  ] as const;
+
   return (
     <div className="relative min-h-screen">
+      {/* ── Scroll Progress Indicator ── */}
+      <ScrollProgress sections={SECTIONS} />
       {/* ── Navbar ── */}
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
