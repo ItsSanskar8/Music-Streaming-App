@@ -4,6 +4,7 @@
 // Checks each playlist for existing songs to prevent duplicates.
 
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { FolderPlus, Plus, Check, Loader2, Music2 } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Song } from "@/types";
@@ -124,7 +125,8 @@ export default function AddToPlaylistButton({ song, size = 18, className = "" }:
   return (
     <span className="ml-0.5 flex h-7 w-7 items-center justify-center">
     <div ref={ref} className="relative w-full">
-      <button
+      <motion.button
+        whileTap={{ scale: 0.85 }}
         onClick={(e) => {
           e.stopPropagation();
           setOpen((v) => !v);
@@ -134,7 +136,7 @@ export default function AddToPlaylistButton({ song, size = 18, className = "" }:
         className={`text-white/45 transition-colors hover:text-nova-cyan ${className}`}
       >
         <FolderPlus size={size} />
-      </button>
+      </motion.button>
 
       {open && (
         <div

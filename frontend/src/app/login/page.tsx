@@ -2,7 +2,7 @@
 
 // Premium Nova login — clear 401 handling, toast, forgot-password link.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -15,6 +15,12 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
+  const [redirectTo, setRedirectTo] = useState("/dashboard");
+
+  useEffect(() => {
+    const r = new URLSearchParams(window.location.search).get("redirect");
+    if (r) setRedirectTo(r);
+  }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,7 +33,7 @@ export default function LoginPage() {
     try {
       await login(email.trim().toLowerCase(), password);
       toast.success("Welcome back!", { id: "auth-success" });
-      router.push("/dashboard");
+      router.push(redirectTo);
     } catch (err: any) {
       const msg = err?.message || "Invalid email or password. Please try again.";
       setError(msg);

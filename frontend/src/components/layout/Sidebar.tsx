@@ -24,6 +24,9 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { listPlaylists, type PlaylistSummary } from "@/services/playlistsApi";
 
+const NAV_ITEM_EASE = [0.22, 1, 0.36, 1] as const;
+const NAV_ITEM_TAP = { scale: 0.96 };
+
 const NAV = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/explore", label: "Explore", icon: Compass },
@@ -107,8 +110,10 @@ export default function Sidebar() {
                 href={`/playlists/${p.id}`}
                 className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-white/55 transition-colors hover:bg-white/[0.04] hover:text-white"
               >
-                <Music2 size={15} className="flex-shrink-0 text-white/40" />
-                <span className="truncate">{p.name}</span>
+                <motion.div whileTap={NAV_ITEM_TAP} className="flex items-center gap-2.5">
+                  <Music2 size={15} className="flex-shrink-0 text-white/40" />
+                  <span className="truncate">{p.name}</span>
+                </motion.div>
               </Link>
             ))
           )}

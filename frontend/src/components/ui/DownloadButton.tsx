@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Download, Loader2, Check, X } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Song } from "@/types";
@@ -42,7 +43,8 @@ export default function DownloadButton({ song, size = 18, className = "" }: Prop
 
   return (
     <span className="ml-0.5 flex h-7 w-7 items-center justify-center">
-      <button
+      <motion.button
+        whileTap={{ scale: 0.85 }}
         onClick={onClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -64,7 +66,7 @@ export default function DownloadButton({ song, size = 18, className = "" }: Prop
         ) : (
           <Download size={size} />
         )}
-      </button>
+      </motion.button>
     </span>
   );
 }

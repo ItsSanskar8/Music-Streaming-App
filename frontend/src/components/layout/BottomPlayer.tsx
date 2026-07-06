@@ -1,8 +1,10 @@
 "use client";
 
-// Persistent glass bottom player. Cyan-gradient seek bar (drives seek()),
-// shuffle/repeat toggles, volume, like, real MP3 download, and toggles for
-// the Queue drawer + Now-Playing panel. (Fully restyled for v2.)
+// ============================================================================
+//  Nova Bottom Player v4 — Enhanced controls with animated glow ring,
+//  expanded seek bar on hover, vinyl disc effect on album art, and
+//  smooth micro-interactions throughout.
+// ============================================================================
 
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -19,7 +21,11 @@ import {
   ListMusic,
   PanelRightOpen,
   Loader2,
+  Disc3,
 } from "lucide-react";
+
+const TAP = { scale: 0.9 };
+const EASE = [0.22, 1, 0.36, 1] as const;
 import { usePlayer } from "@/contexts/PlayerContext";
 import { useUI } from "@/contexts/UIContext";
 import { triggerDownload } from "@/services/api";
@@ -53,6 +59,7 @@ export default function BottomPlayer() {
   } = usePlayer();
   const { toggleQueue, toggleNowPlaying, queueOpen, nowPlayingOpen } = useUI();
   const [downloading, setDownloading] = useState(false);
+  const [seekHover, setSeekHover] = useState(false);
 
   const progress = duration ? (currentTime / duration) * 100 : 0;
   const liked = current ? isLiked(current) : false;
@@ -70,19 +77,41 @@ export default function BottomPlayer() {
       initial={{ y: 40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-      className="fixed inset-x-0 bottom-0 z-40 h-24 border-t border-white/[0.08] bg-nova-bg2/70 shadow-[0_-8px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+      className="fixed inset-x-0 bottom-0 z-40 h-24 border-t border-white/[0.08] bg-nova-bg2/70 shadow-[0_-8px_40px_rgba(0,0,0,0.5)] backdrop-blur-3xl"
     >
       <div className="mx-auto flex h-full max-w-[1700px] items-center gap-4 px-4 sm:px-6">
-        {/* Track info */}
+        {/* ════ Track Info ════ */}
         <div className="flex min-w-0 flex-1 items-center gap-3">
           {current ? (
             <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={current.thumbnail || ""}
-                alt={current.title}
-                className="h-14 w-14 flex-shrink-0 rounded-xl object-cover shadow-lg ring-1 ring-white/10"
-              />
+              <div className="relative flex-shrink-0">
+                {/* Animated glow ring when playing */}
+                {isPlaying && (
+                  <motion.div
+                    animate={{ scale: [1, 1.12, 1], opacity: [0.4, 0.15, 0.4] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                    className="pointer-events-none absolute -inset-2 rounded-[18px] bg-gradient-to-br from-nova-cyan/30 to-nova-blue/20 blur-md"
+                  />
+                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={current.thumbnail || ""}
+                  alt={current.title}
+                  className={`h-14 w-14 rounded-xl object-cover shadow-lg ring-1 ring-white/10 transition-all duration-500 ${
+                    isPlaying ? "ring-nova-cyan/30" : ""
+                  }`}
+                />
+                {/* Spinning disc indicator */}
+                {isPlaying && (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="pointer-events-none absolute -right-1 -top-1"
+                  >
+                    <Disc3 size={14} className="text-nova-cyan" />
+                  </motion.div>
+                )}
+              </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">
                   {current.title}
@@ -91,7 +120,8 @@ export default function BottomPlayer() {
                   {current.artist}
                 </p>
               </div>
-              <button
+              <motion.button
+                whileTap={TAP}
                 onClick={() => toggleLike(current)}
                 className="ml-1 hidden text-white/45 transition-colors hover:text-nova-cyan sm:block"
                 aria-label="Like"
@@ -100,17 +130,23 @@ export default function BottomPlayer() {
                   size={18}
                   className={liked ? "fill-nova-cyan text-nova-cyan" : ""}
                 />
-              </button>
+              </motion.button>
             </>
           ) : (
-            <p className="text-sm text-white/40">Nothing playing</p>
+            <div className="flex items-center gap-3">
+              <div className="h-14 w-14 rounded-xl bg-white/[0.04] ring-1 ring-white/10 flex items-center justify-center">
+                <Disc3 size={20} className="text-white/20" />
+              </div>
+              <p className="text-sm text-white/40">Nothing playing</p>
+            </div>
           )}
         </div>
 
-        {/* Controls + seek */}
+        {/* ════ Controls + Seek ════ */}
         <div className="flex flex-[1.5] flex-col items-center gap-1.5">
           <div className="flex items-center gap-4 sm:gap-5">
-            <button
+            <motion.button
+              whileTap={TAP}
               onClick={toggleShuffle}
               className={`hidden transition-colors sm:block ${
                 shuffle ? "text-nova-cyan" : "text-white/45 hover:text-white"
@@ -118,36 +154,48 @@ export default function BottomPlayer() {
               aria-label="Shuffle"
             >
               <Shuffle size={17} />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileTap={TAP}
               onClick={prev}
               disabled={!current}
               className="text-white/70 transition-colors hover:text-white disabled:opacity-40"
               aria-label="Previous"
             >
               <SkipBack size={20} className="fill-current" />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.93 }}
               onClick={togglePlay}
               disabled={!current}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan text-black shadow-glow-cyan transition-transform hover:scale-105 disabled:opacity-40"
+              className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan text-black shadow-glow-cyan transition-all hover:scale-105 hover:shadow-glow-cyan disabled:opacity-40"
               aria-label={isPlaying ? "Pause" : "Play"}
             >
-              {isPlaying ? (
-                <Pause size={19} className="fill-black" />
-              ) : (
-                <Play size={19} className="fill-black" />
+              {/* Breathing glow ring around play button */}
+              {isPlaying && (
+                <motion.span
+                  animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.08, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute inset-0 rounded-full bg-nova-cyan/20 blur-sm"
+                />
               )}
-            </button>
-            <button
+              {isPlaying ? (
+                <Pause size={19} className="fill-black relative z-10" />
+              ) : (
+                <Play size={19} className="fill-black relative z-10" />
+              )}
+            </motion.button>
+            <motion.button
+              whileTap={TAP}
               onClick={next}
               disabled={!current}
               className="text-white/70 transition-colors hover:text-white disabled:opacity-40"
               aria-label="Next"
             >
               <SkipForward size={20} className="fill-current" />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileTap={TAP}
               onClick={toggleRepeat}
               className={`hidden transition-colors sm:block ${
                 repeat ? "text-nova-cyan" : "text-white/45 hover:text-white"
@@ -155,13 +203,20 @@ export default function BottomPlayer() {
               aria-label="Repeat"
             >
               <Repeat size={17} />
-            </button>
+            </motion.button>
           </div>
 
-          <div className="flex w-full max-w-2xl items-center gap-2">
-            <span className="w-10 text-right text-[11px] tabular-nums text-white/40">
+          <div
+            className="flex w-full max-w-2xl items-center gap-2"
+            onMouseEnter={() => setSeekHover(true)}
+            onMouseLeave={() => setSeekHover(false)}
+          >
+            <motion.span
+              animate={{ width: seekHover ? 48 : 40 }}
+              className="text-right text-[11px] tabular-nums text-white/40 overflow-hidden"
+            >
               {fmt(currentTime)}
-            </span>
+            </motion.span>
             <input
               type="range"
               min={0}
@@ -175,15 +230,19 @@ export default function BottomPlayer() {
               }}
               aria-label="Seek"
             />
-            <span className="w-10 text-[11px] tabular-nums text-white/40">
+            <motion.span
+              animate={{ width: seekHover ? 48 : 40 }}
+              className="text-[11px] tabular-nums text-white/40 overflow-hidden"
+            >
               {fmt(duration)}
-            </span>
+            </motion.span>
           </div>
         </div>
 
-        {/* Right controls */}
+        {/* ════ Right Controls ════ */}
         <div className="flex flex-1 items-center justify-end gap-3">
-          <button
+          <motion.button
+            whileTap={TAP}
             onClick={handleDownload}
             disabled={!current || current?.isLocal || downloading}
             className="text-white/45 transition-colors hover:text-nova-blue disabled:opacity-40"
@@ -195,8 +254,9 @@ export default function BottomPlayer() {
             ) : (
               <Download size={18} />
             )}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={TAP}
             onClick={toggleQueue}
             className={`transition-colors hover:text-white ${
               queueOpen ? "text-nova-cyan" : "text-white/45"
@@ -204,8 +264,9 @@ export default function BottomPlayer() {
             aria-label="Toggle queue"
           >
             <ListMusic size={18} />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={TAP}
             onClick={toggleNowPlaying}
             className={`hidden transition-colors hover:text-white lg:block ${
               nowPlayingOpen ? "text-nova-cyan" : "text-white/45"
@@ -213,7 +274,7 @@ export default function BottomPlayer() {
             aria-label="Toggle now playing panel"
           >
             <PanelRightOpen size={18} />
-          </button>
+          </motion.button>
           <div className="hidden w-28 items-center gap-2 md:flex">
             <Volume2 size={17} className="text-white/45" />
             <input

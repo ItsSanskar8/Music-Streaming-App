@@ -1,10 +1,11 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 // Consistent section title (+ optional subtitle / "see all" link) used to
-// head every dashboard/landing row.
+// head every dashboard/landing row. Animates in on scroll.
 
 interface Props {
   title: string;
@@ -15,7 +16,13 @@ interface Props {
 
 export default function SectionHeader({ title, subtitle, href, action = "See all" }: Props) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-30px" }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      className="mb-5 flex items-end justify-between gap-4"
+    >
       <div>
         <h2 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
           {title}
@@ -32,10 +39,10 @@ export default function SectionHeader({ title, subtitle, href, action = "See all
           {action}
           <ArrowRight
             size={15}
-            className="transition-transform group-hover:translate-x-0.5"
+            className="transition-transform duration-300 group-hover:translate-x-1"
           />
         </Link>
       )}
-    </div>
+    </motion.div>
   );
 }
