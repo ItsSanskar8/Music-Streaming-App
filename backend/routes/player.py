@@ -21,12 +21,16 @@ from starlette.concurrency import run_in_threadpool
 
 router = APIRouter()
 
-# Optional residential/rotating proxy. YouTube blocks datacenter IPs (Render,
+# Optional residential/rotating proxies. YouTube blocks datacenter IPs (Render,
 # AWS, GCP) with a bot-check, so on those hosts extraction must run through a
-# residential proxy. Set PROXY_URL in the environment, e.g.
-#   http://user:pass@host:port   or   socks5://user:pass@host:port
+# proxy. Set PROXY_URL to ONE proxy or a COMMA-SEPARATED LIST, e.g.
+#   http://user:pass@host1:port,http://user:pass@host2:port
+# We try them in order and use the first that resolves — so when a single proxy
+# IP gets blocked, the backend auto-fails-over to the next with no redeploy.
 # Left unset (local dev on a residential IP), everything works proxy-free.
-PROXY_URL = os.environ.get("PROXY_URL", "").strip() or None
+PROXY_LIST = [p.strip() for p in os.environ.get("PROXY_URL", "").split(",") if p.strip()]
+# `None` means "no proxy / direct connection" — the local-dev path.
+_PROXY_CANDIDATES = PROXY_LIST or [None]
 
 # Legal, freely-usable demo audio served when yt-dlp cannot resolve a stream
 # (e.g. YouTube's "Sign in to confirm you're not a bot" bot check on the host).
@@ -38,8 +42,10 @@ BROWSER_UA = (
     "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
 
-# yt_id -> (direct_url, expires_at_epoch)
-_URL_CACHE: dict[str, tuple[str, float]] = {}
+# yt_id -> (direct_url, proxy_used, expires_at_epoch). We cache the proxy too
+# because a googlevideo URL is IP-locked to whichever proxy extracted it, so the
+# byte-stream fetch must reuse that exact proxy.
+_URL_CACHE: dict[str, tuple[str, str | None, float]] = {}
 _CACHE_TTL = 3600  # seconds
 
 
@@ -49,6 +55,14 @@ _CACHE_TTL = 3600  # seconds
 # and — critically — need NO cookies. We try them in order and take the first
 # that yields an audio URL. This is the load-bearing keyless-fetch trick.
 _PLAYER_CLIENTS = ["android", "ios", "tv", "web_embedded", "web"]
+
+
+def _proxy_tag(proxy: str | None) -> str:
+    """Short, password-free label for a proxy, for log lines."""
+    if not proxy:
+        return "direct"
+    host = proxy.split("@")[-1]  # drop user:pass@ if present
+    return f"proxy[{host}]"
 
 
 def _url_from_info(info: dict) -> str | None:
@@ -64,51 +78,58 @@ def _url_from_info(info: dict) -> str | None:
     return None
 
 
-def _extract_audio_url(yt_id: str) -> str:
+def _extract_audio_url(yt_id: str) -> tuple[str, str | None]:
     """Resolve (and cache) the direct audio stream URL via yt-dlp. Blocking.
 
-    Tries multiple YouTube player clients so a bot-check on one (typically
-    `web` from a datacenter IP) doesn't sink the whole request. No cookies.
+    Returns (audio_url, proxy_used) — the caller must reuse `proxy_used` for the
+    byte-stream fetch because googlevideo URLs are IP-locked to the extractor.
+
+    Tries each proxy candidate, and within each, multiple YouTube player clients,
+    so a bot-check on one client OR a blocked proxy IP doesn't sink the request.
+    Auto-fails-over to the next proxy in the list. No cookies.
     """
     now = time.time()
     cached = _URL_CACHE.get(yt_id)
-    if cached and cached[1] > now:
-        return cached[0]
+    if cached and cached[2] > now:
+        return cached[0], cached[1]
 
     watch_url = f"https://www.youtube.com/watch?v={yt_id}"
     last_err: Exception | None = None
 
-    for client in _PLAYER_CLIENTS:
-        opts = {
-            "format": "bestaudio/best",
-            "quiet": True,
-            "no_warnings": True,
-            "skip_download": True,
-            "noplaylist": True,
-            "extractor_args": {"youtube": {"player_client": [client]}},
-        }
-        if PROXY_URL:
-            opts["proxy"] = PROXY_URL
-        try:
-            with yt_dlp.YoutubeDL(opts) as ydl:
-                info = ydl.extract_info(watch_url, download=False)
-            url = _url_from_info(info)
-            if url:
-                _URL_CACHE[yt_id] = (url, now + _CACHE_TTL)
-                return url
-            last_err = RuntimeError("No audio URL in info")
-        except Exception as exc:  # noqa: BLE001 — try the next client
-            last_err = exc
-            print(f"[player] client {client!r} failed for {yt_id!r}: {exc!r}")
+    for proxy in _PROXY_CANDIDATES:
+        for client in _PLAYER_CLIENTS:
+            opts = {
+                "format": "bestaudio/best",
+                "quiet": True,
+                "no_warnings": True,
+                "skip_download": True,
+                "noplaylist": True,
+                "extractor_args": {"youtube": {"player_client": [client]}},
+            }
+            if proxy:
+                opts["proxy"] = proxy
+            try:
+                with yt_dlp.YoutubeDL(opts) as ydl:
+                    info = ydl.extract_info(watch_url, download=False)
+                url = _url_from_info(info)
+                if url:
+                    _URL_CACHE[yt_id] = (url, proxy, now + _CACHE_TTL)
+                    return url, proxy
+                last_err = RuntimeError("No audio URL in info")
+            except Exception as exc:  # noqa: BLE001 — try next client/proxy
+                last_err = exc
+                tag = _proxy_tag(proxy)
+                print(f"[player] {tag} client {client!r} failed for {yt_id!r}: {exc!r}")
 
-    raise RuntimeError(f"All player clients failed: {last_err!r}")
+    raise RuntimeError(f"All proxies/clients failed: {last_err!r}")
 
 
 @router.get("/stream/{yt_id}")
 async def stream(yt_id: str, request: Request):
     used_fallback = False
+    stream_proxy: str | None = None
     try:
-        audio_url = await run_in_threadpool(_extract_audio_url, yt_id)
+        audio_url, stream_proxy = await run_in_threadpool(_extract_audio_url, yt_id)
     except Exception as exc:  # noqa: BLE001
         # Don't 404 — YouTube may reject extraction (bot check, geo, throttling).
         # Fall back to a legal demo track so the player keeps working. The proxy
@@ -124,9 +145,10 @@ async def stream(yt_id: str, request: Request):
         upstream_headers["Range"] = range_header
 
     # googlevideo URLs are locked to the IP that extracted them, so the audio
-    # fetch must go through the SAME proxy as extraction. The SoundHelix
-    # fallback is public and needs no proxy — fetch it directly.
-    stream_proxy = PROXY_URL if (PROXY_URL and not used_fallback) else None
+    # fetch must go through the SAME proxy that _extract_audio_url used. The
+    # SoundHelix fallback is public and needs no proxy — fetch it directly.
+    if used_fallback:
+        stream_proxy = None
     client = httpx.AsyncClient(timeout=None, follow_redirects=True, proxy=stream_proxy)
     upstream_req = client.build_request("GET", audio_url, headers=upstream_headers)
     try:
