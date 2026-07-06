@@ -10,6 +10,7 @@ Because the browser's <audio> element issues range requests when the user
 seeks, mirroring 206 + Content-Range is what makes the scrub bar work.
 """
 
+import os
 import time
 
 import httpx
@@ -19,6 +20,13 @@ from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 
 router = APIRouter()
+
+# Optional residential/rotating proxy. YouTube blocks datacenter IPs (Render,
+# AWS, GCP) with a bot-check, so on those hosts extraction must run through a
+# residential proxy. Set PROXY_URL in the environment, e.g.
+#   http://user:pass@host:port   or   socks5://user:pass@host:port
+# Left unset (local dev on a residential IP), everything works proxy-free.
+PROXY_URL = os.environ.get("PROXY_URL", "").strip() or None
 
 # Legal, freely-usable demo audio served when yt-dlp cannot resolve a stream
 # (e.g. YouTube's "Sign in to confirm you're not a bot" bot check on the host).
@@ -79,6 +87,8 @@ def _extract_audio_url(yt_id: str) -> str:
             "noplaylist": True,
             "extractor_args": {"youtube": {"player_client": [client]}},
         }
+        if PROXY_URL:
+            opts["proxy"] = PROXY_URL
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
                 info = ydl.extract_info(watch_url, download=False)
@@ -96,6 +106,7 @@ def _extract_audio_url(yt_id: str) -> str:
 
 @router.get("/stream/{yt_id}")
 async def stream(yt_id: str, request: Request):
+    used_fallback = False
     try:
         audio_url = await run_in_threadpool(_extract_audio_url, yt_id)
     except Exception as exc:  # noqa: BLE001
@@ -104,6 +115,7 @@ async def stream(yt_id: str, request: Request):
         # logic below is source-agnostic and preserves Range/seeking for it too.
         print(f"[player] yt-dlp failed for {yt_id!r}: {exc!r} — using fallback audio")
         audio_url = FALLBACK_AUDIO_URL
+        used_fallback = True
 
     # Forward the client's Range header (or default to the whole file).
     range_header = request.headers.get("range")
@@ -111,7 +123,11 @@ async def stream(yt_id: str, request: Request):
     if range_header:
         upstream_headers["Range"] = range_header
 
-    client = httpx.AsyncClient(timeout=None, follow_redirects=True)
+    # googlevideo URLs are locked to the IP that extracted them, so the audio
+    # fetch must go through the SAME proxy as extraction. The SoundHelix
+    # fallback is public and needs no proxy — fetch it directly.
+    stream_proxy = PROXY_URL if (PROXY_URL and not used_fallback) else None
+    client = httpx.AsyncClient(timeout=None, follow_redirects=True, proxy=stream_proxy)
     upstream_req = client.build_request("GET", audio_url, headers=upstream_headers)
     try:
         upstream = await client.send(upstream_req, stream=True)
