@@ -35,36 +35,63 @@ _URL_CACHE: dict[str, tuple[str, float]] = {}
 _CACHE_TTL = 3600  # seconds
 
 
+# YouTube's "confirm you're not a bot" wall targets datacenter IPs (Render, AWS,
+# GCP). The default `web` client trips it almost every time from a server. The
+# mobile/tv/embedded player APIs use different endpoints that frequently DON'T,
+# and — critically — need NO cookies. We try them in order and take the first
+# that yields an audio URL. This is the load-bearing keyless-fetch trick.
+_PLAYER_CLIENTS = ["android", "ios", "tv", "web_embedded", "web"]
+
+
+def _url_from_info(info: dict) -> str | None:
+    """Pull a usable audio URL out of a yt-dlp info dict, if present."""
+    url = info.get("url")
+    if url:
+        return url
+    # Some extractions nest the URL inside `requested_formats` / `formats`.
+    formats = info.get("requested_formats") or info.get("formats") or []
+    for f in reversed(formats):
+        if f.get("acodec") not in (None, "none") and f.get("url"):
+            return f["url"]
+    return None
+
+
 def _extract_audio_url(yt_id: str) -> str:
-    """Resolve (and cache) the direct audio stream URL via yt-dlp. Blocking."""
+    """Resolve (and cache) the direct audio stream URL via yt-dlp. Blocking.
+
+    Tries multiple YouTube player clients so a bot-check on one (typically
+    `web` from a datacenter IP) doesn't sink the whole request. No cookies.
+    """
     now = time.time()
     cached = _URL_CACHE.get(yt_id)
     if cached and cached[1] > now:
         return cached[0]
 
-    opts = {
-        "format": "bestaudio/best",
-        "quiet": True,
-        "no_warnings": True,
-        "skip_download": True,
-        "noplaylist": True,
-    }
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(f"https://www.youtube.com/watch?v={yt_id}", download=False)
+    watch_url = f"https://www.youtube.com/watch?v={yt_id}"
+    last_err: Exception | None = None
 
-    url = info.get("url")
-    if not url:
-        # Some extractions nest the URL inside `requested_formats`.
-        formats = info.get("requested_formats") or info.get("formats") or []
-        for f in reversed(formats):
-            if f.get("acodec") not in (None, "none") and f.get("url"):
-                url = f["url"]
-                break
-    if not url:
-        raise RuntimeError("No audio URL found")
+    for client in _PLAYER_CLIENTS:
+        opts = {
+            "format": "bestaudio/best",
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+            "noplaylist": True,
+            "extractor_args": {"youtube": {"player_client": [client]}},
+        }
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(watch_url, download=False)
+            url = _url_from_info(info)
+            if url:
+                _URL_CACHE[yt_id] = (url, now + _CACHE_TTL)
+                return url
+            last_err = RuntimeError("No audio URL in info")
+        except Exception as exc:  # noqa: BLE001 — try the next client
+            last_err = exc
+            print(f"[player] client {client!r} failed for {yt_id!r}: {exc!r}")
 
-    _URL_CACHE[yt_id] = (url, now + _CACHE_TTL)
-    return url
+    raise RuntimeError(f"All player clients failed: {last_err!r}")
 
 
 @router.get("/stream/{yt_id}")
