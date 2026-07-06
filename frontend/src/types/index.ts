@@ -23,6 +23,7 @@ export interface Song {
   thumbnail?: string | null;
   duration: number; // seconds
   mood: Mood | string;
+  play_count?: number;
   // Set for locally-imported MP3s: a blob URL used directly as the <audio>
   // src (bypasses the backend stream proxy). Undefined for streamed songs.
   localUrl?: string;

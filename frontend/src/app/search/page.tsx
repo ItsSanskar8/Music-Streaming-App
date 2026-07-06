@@ -1,35 +1,40 @@
 "use client";
 
-// Search — debounced input, results grid, with Play / Add to Queue / Download.
+// Search — debounced input, grouped results, loading/empty states.
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { Play, Plus, Download, Search as SearchIcon, Loader2 } from "lucide-react";
-import AppleCard from "@/components/ui/AppleCard";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search as SearchIcon, Loader2, Music2 } from "lucide-react";
+import AuthGuard from "@/components/auth/AuthGuard";
+import SongRow from "@/components/music/SongRow";
+import MusicCard from "@/components/cards/MusicCard";
+import EmptyState from "@/components/ui/EmptyState";
 import { usePlayer } from "@/contexts/PlayerContext";
-import { searchSongs, triggerDownload } from "@/services/api";
+import { searchSongs } from "@/services/api";
 import type { Song } from "@/types";
 
-const EASE = [0.25, 0.1, 0.25, 1] as const;
-
-function fmtDuration(sec: number): string {
-  if (!sec) return "";
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 function SearchInner() {
   const params = useSearchParams();
   const initial = params.get("q") ?? "";
-  const { playSong, addToQueue } = usePlayer();
+  const { playSong } = usePlayer();
 
   const [query, setQuery] = useState(initial);
   const [results, setResults] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear the search when navigating to /search without a query param.
+  useEffect(() => {
+    setQuery(params.get("q") ?? "");
+    if (!params.get("q")) {
+      setResults([]);
+      setSearched(false);
+    }
+  }, [params]);
 
   const runSearch = useCallback(async (term: string) => {
     if (!term.trim()) {
@@ -48,112 +53,149 @@ function SearchInner() {
     }
   }, []);
 
-  // Debounce input by 500ms.
+  // Debounce input by 400ms.
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => runSearch(query), 500);
+    debounceRef.current = setTimeout(() => runSearch(query), 400);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [query, runSearch]);
 
+  // Derive artist groupings from results.
+  const artistGroups = (() => {
+    const map = new Map<string, Song[]>();
+    for (const s of results) {
+      const existing = map.get(s.artist) || [];
+      existing.push(s);
+      map.set(s.artist, existing);
+    }
+    return Array.from(map.entries()).slice(0, 5);
+  })();
+
   return (
-    <div className="px-5 py-8 sm:px-8">
-      <h1 className="mb-6 text-3xl font-bold tracking-tight text-nova-primary">
-        Search
-      </h1>
+    <AuthGuard>
+      <div className="px-5 py-8 sm:px-8">
+        {/* Search input */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE }}
+          className="mb-8"
+        >
+          <h1 className="mb-6 text-3xl font-bold tracking-tight text-white">
+            Search
+          </h1>
+          <div className="relative max-w-2xl">
+            <SearchIcon
+              size={18}
+              className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-white/40"
+            />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="What do you want to listen to?"
+              className="w-full rounded-2xl border border-white/10 bg-white/[0.04] py-4 pl-12 pr-5 text-sm font-medium text-white placeholder:text-white/40 outline-none transition-all focus:border-nova-cyan/40 focus:shadow-glow-cyan focus:bg-white/[0.06]"
+            />
+          </div>
+        </motion.div>
 
-      <div className="relative mb-8 max-w-xl">
-        <SearchIcon
-          size={18}
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-nova-secondary"
-        />
-        <input
-          autoFocus
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="What do you want to listen to?"
-          className="w-full rounded-2xl border border-white/10 bg-nova-surface py-3.5 pl-11 pr-4 text-sm font-medium text-nova-primary placeholder:text-nova-secondary outline-none transition-colors focus:border-nova-cyan/40"
-        />
+        {/* Loading */}
+        <AnimatePresence mode="wait">
+          {loading && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center gap-2 text-sm text-white/50"
+            >
+              <Loader2 size={16} className="animate-spin text-nova-cyan" />
+              Searching…
+            </motion.div>
+          )}
+
+          {/* Empty state — no query */}
+          {!loading && !searched && (
+            <motion.div
+              key="empty-search"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <EmptyState
+                icon={SearchIcon}
+                title="Search Nova"
+                subtitle="Find songs, artists, albums, and more. Start typing to explore."
+              />
+            </motion.div>
+          )}
+
+          {/* No results */}
+          {!loading && searched && results.length === 0 && (
+            <motion.div
+              key="no-results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <EmptyState
+                icon={Music2}
+                title="No results found"
+                subtitle={`Nothing matched "${query}". Try a different search term.`}
+              />
+            </motion.div>
+          )}
+
+          {/* Results */}
+          {!loading && results.length > 0 && (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <p className="mb-4 text-sm text-white/50">
+                {results.length} result{results.length !== 1 ? "s" : ""} for{" "}
+                <span className="font-medium text-nova-cyan">"{query}"</span>
+              </p>
+
+              {/* Top Results — full-width song list */}
+              <div className="mb-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-2 backdrop-blur-xl">
+                {results.slice(0, 10).map((s, i) => (
+                  <SongRow key={s.yt_id} song={s} list={results} rank={i + 1} index={i} />
+                ))}
+              </div>
+
+              {/* Artists found */}
+              {artistGroups.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="mb-4 text-xl font-bold tracking-tight text-white">
+                    Artists Found
+                  </h2>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                    {artistGroups.map(([artist, artistSongs], i) => (
+                      <MusicCard
+                        key={artist}
+                        song={artistSongs[0]}
+                        list={artistSongs}
+                        index={i}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-
-      {loading && (
-        <div className="flex items-center gap-2 text-sm text-nova-secondary">
-          <Loader2 size={16} className="animate-spin" /> Searching…
-        </div>
-      )}
-
-      {!loading && searched && results.length === 0 && (
-        <p className="text-sm text-nova-secondary">No results found.</p>
-      )}
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {results.map((s, i) => (
-          <motion.div
-            key={s.yt_id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: EASE, delay: Math.min(i * 0.03, 0.3) }}
-          >
-            <AppleCard hover={false} className="group flex items-center gap-3 p-3">
-              <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-nova-elevated">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={s.thumbnail || ""}
-                  alt={s.title}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-nova-primary">
-                  {s.title}
-                </p>
-                <p className="truncate text-xs font-medium text-nova-secondary">
-                  {s.artist}
-                  {s.duration ? ` · ${fmtDuration(s.duration)}` : ""}
-                </p>
-                <span className="mt-1 inline-block rounded-full bg-nova-elevated px-2 py-0.5 text-[10px] font-medium capitalize text-nova-secondary">
-                  {s.mood}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => addToQueue(s)}
-                  className="rounded-full p-2 text-nova-secondary transition-colors hover:text-nova-primary"
-                  aria-label="Add to queue"
-                  title="Add to queue"
-                >
-                  <Plus size={17} />
-                </button>
-                <button
-                  onClick={() => triggerDownload(s)}
-                  className="rounded-full p-2 text-nova-secondary transition-colors hover:text-nova-primary"
-                  aria-label="Download MP3"
-                  title="Download MP3"
-                >
-                  <Download size={17} />
-                </button>
-                <button
-                  onClick={() => playSong(s, results)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-nova-primary text-black transition-transform hover:scale-105"
-                  aria-label="Play"
-                  title="Play"
-                >
-                  <Play size={15} className="fill-black" />
-                </button>
-              </div>
-            </AppleCard>
-          </motion.div>
-        ))}
-      </div>
-    </div>
+    </AuthGuard>
   );
 }
 
 export default function SearchPage() {
-  // useSearchParams must be wrapped in Suspense in the App Router.
   return (
     <Suspense fallback={null}>
       <SearchInner />

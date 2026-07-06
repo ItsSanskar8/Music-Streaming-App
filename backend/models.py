@@ -38,6 +38,7 @@ class Song(Base):
     thumbnail = Column(String, nullable=True)
     duration = Column(Integer, default=0)  # seconds
     mood = Column(String, index=True, default="chill")
+    play_count = Column(Integer, default=0, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

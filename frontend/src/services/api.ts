@@ -11,23 +11,57 @@ const TOKEN_KEY = "nova_token";
 export const tokenStore = {
   get: () =>
     typeof window === "undefined" ? null : localStorage.getItem(TOKEN_KEY),
-  set: (t: string) => localStorage.setItem(TOKEN_KEY, t),
-  clear: () => localStorage.removeItem(TOKEN_KEY),
+
+  set: (t: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(TOKEN_KEY, t);
+    }
+  },
+
+  clear: () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  },
 };
 
 export const api = axios.create({
   baseURL: `${API_URL}/api`,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // Attach the Bearer token to every request if we have one.
 api.interceptors.request.use((config) => {
   const token = tokenStore.get();
+
   if (token) {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
+
+// Better FastAPI error message helper.
+function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const detail = error.response?.data?.detail;
+
+    if (Array.isArray(detail)) {
+      return detail.map((item) => item.msg).join(", ");
+    }
+
+    if (typeof detail === "string") {
+      return detail;
+    }
+
+    return error.response?.data?.message || error.message || "Request failed";
+  }
+
+  return "Something went wrong";
+}
 
 // --------------------------- Auth --------------------------- //
 export async function signup(
@@ -35,28 +69,92 @@ export async function signup(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  const { data } = await api.post<AuthResponse>("/auth/signup", {
-    name,
-    email,
-    password,
-  });
-  return data;
+  try {
+    const { data } = await api.post<AuthResponse>("/auth/signup", {
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    // Important fix: save token after successful signup
+    if (data.access_token) {
+      tokenStore.set(data.access_token);
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function login(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  const { data } = await api.post<AuthResponse>("/auth/login", {
-    email,
-    password,
-  });
-  return data;
+  try {
+    const { data } = await api.post<AuthResponse>("/auth/login", {
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    // Important fix: save token after successful login
+    if (data.access_token) {
+      tokenStore.set(data.access_token);
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function getMe(): Promise<User> {
-  const { data } = await api.get<User>("/auth/me");
-  return data;
+  try {
+    const { data } = await api.get<User>("/auth/me");
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export function logout() {
+  tokenStore.clear();
+
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
+}
+
+export interface ForgotResponse {
+  detail: string;
+  reset_token?: string | null;
+}
+
+export async function forgotPassword(email: string): Promise<ForgotResponse> {
+  try {
+    const { data } = await api.post<ForgotResponse>("/auth/forgot-password", {
+      email: email.trim().toLowerCase(),
+    });
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function resetPassword(
+  token: string,
+  password: string
+): Promise<AuthResponse> {
+  try {
+    const { data } = await api.post<AuthResponse>("/auth/reset-password", {
+      token,
+      password,
+    });
+    if (data.access_token) tokenStore.set(data.access_token);
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 // --------------------------- Music -------------------------- //
@@ -72,6 +170,15 @@ export async function getTrending(): Promise<Song[]> {
 
 export async function recommendByMood(mood: string): Promise<Song[]> {
   const { data } = await api.get<Song[]>("/recommend", { params: { mood } });
+  return data;
+}
+
+export async function incrementPlayCount(ytId: string): Promise<void> {
+  await api.post(`/songs/${ytId}/play`);
+}
+
+export async function getExplore(limit = 20): Promise<Song[]> {
+  const { data } = await api.get<Song[]>("/explore", { params: { limit } });
   return data;
 }
 

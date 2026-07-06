@@ -9,6 +9,7 @@ import { formatTime } from "@/lib/format";
 import LikeButton from "@/components/ui/LikeButton";
 import QueueButton from "@/components/ui/QueueButton";
 import DownloadButton from "@/components/ui/DownloadButton";
+import AddToPlaylistButton from "@/components/ui/AddToPlaylistButton";
 import AnimatedWaveform from "@/components/ui/AnimatedWaveform";
 
 // A single ranked track row: rank · cover · title/artist · actions · duration.
@@ -20,9 +21,13 @@ interface Props {
   list?: Song[];
   rank?: number;
   index?: number;
+  /** Keep actions always visible (e.g. on the Liked page). */
+  showActions?: boolean;
+  /** Show play count badge next to duration. */
+  showPlayCount?: boolean;
 }
 
-export default function SongRow({ song, list, rank, index = 0 }: Props) {
+export default function SongRow({ song, list, rank, index = 0, showActions = false, showPlayCount = false }: Props) {
   const { current, isPlaying, playSong, togglePlay } = usePlayer();
   const isCurrent = current?.yt_id === song.yt_id;
 
@@ -86,16 +91,24 @@ export default function SongRow({ song, list, rank, index = 0 }: Props) {
         {song.mood}
       </span>
 
-      {/* Actions (reveal on hover) */}
-      <div className="flex items-center gap-3 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+      {/* Actions (reveal on hover, or always visible when showActions is true) */}
+      <div className={`flex items-center transition-opacity focus-within:opacity-100 ${showActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
         <QueueButton song={song} size={17} />
+        <AddToPlaylistButton song={song} size={17} />
         <DownloadButton song={song} size={17} />
         <LikeButton song={song} size={17} />
       </div>
 
-      <span className="w-10 flex-shrink-0 text-right text-xs tabular-nums text-white/40">
-        {formatTime(song.duration)}
-      </span>
+      <div className="flex items-center gap-3">
+        {showPlayCount && song.play_count != null && song.play_count > 0 && (
+          <span className="hidden text-[11px] font-medium text-white/35 tabular-nums sm:inline">
+            {song.play_count.toLocaleString()} plays
+          </span>
+        )}
+        <span className="w-10 flex-shrink-0 text-right text-xs tabular-nums text-white/40">
+          {formatTime(song.duration)}
+        </span>
+      </div>
     </motion.div>
   );
 }

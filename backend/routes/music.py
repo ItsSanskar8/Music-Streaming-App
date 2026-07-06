@@ -9,10 +9,11 @@ Every discovered track is mood-tagged and upserted into SQLite.
 import os
 import shutil
 import tempfile
+import time
 
 import httpx
 import yt_dlp
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -48,6 +49,7 @@ class SongOut(BaseModel):
     thumbnail: str | None
     duration: int
     mood: str
+    play_count: int = 0
 
     class Config:
         from_attributes = True
@@ -144,6 +146,75 @@ def _search_ytdlp(q: str, limit: int = 12) -> list[dict]:
     return results
 
 
+# ------------------------- YouTube trending ------------------------------ #
+# In-memory cache so we don't hammer Piped on every page load.
+_TRENDING_CACHE: dict = {"data": None, "ts": 0.0}
+_TRENDING_TTL = 600  # 10 minutes
+
+
+async def _fetch_trending_piped(limit: int = 20) -> list[dict]:
+    """Fetch trending music from a Piped instance."""
+    async with httpx.AsyncClient(timeout=10.0, headers={"User-Agent": BROWSER_UA}) as client:
+        for base in PIPED_INSTANCES:
+            try:
+                resp = await client.get(
+                    f"{base}/trending",
+                    params={"filter": "music_songs"},
+                )
+                if resp.status_code != 200:
+                    continue
+                items = resp.json().get("items", [])
+                results = []
+                for it in items:
+                    if it.get("type") not in (None, "stream"):
+                        continue
+                    yt_id = _video_id_from_url(it.get("url", ""))
+                    if not yt_id:
+                        continue
+                    thumb = it.get("thumbnail")
+                    results.append({
+                        "yt_id": yt_id,
+                        "title": it.get("title", "Unknown"),
+                        "artist": it.get("uploaderName", "Unknown Artist"),
+                        "thumbnail": thumb,
+                        "duration": it.get("duration", 0) or 0,
+                    })
+                    if len(results) >= limit:
+                        break
+                if results:
+                    return results
+            except (httpx.HTTPError, ValueError):
+                continue
+    return []
+
+
+def _fetch_trending_ytdlp(limit: int = 20) -> list[dict]:
+    """Fallback: search YouTube for "trending music" using yt-dlp."""
+    opts = {
+        "quiet": True,
+        "no_warnings": True,
+        "extract_flat": True,
+        "default_search": "ytsearch",
+        "skip_download": True,
+    }
+    results: list[dict] = []
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(f"ytsearch{limit}:trending music 2024", download=False)
+    for e in (info or {}).get("entries", []) or []:
+        if not e:
+            continue
+        thumbs = e.get("thumbnails") or []
+        thumb = thumbs[-1]["url"] if thumbs else e.get("thumbnail")
+        results.append({
+            "yt_id": e.get("id"),
+            "title": e.get("title", "Unknown"),
+            "artist": e.get("uploader") or e.get("channel") or "Unknown Artist",
+            "thumbnail": thumb,
+            "duration": int(e.get("duration") or 0),
+        })
+    return results
+
+
 # Seed data used by main.py on startup and by the trending endpoint fallback.
 TRENDING_SEED = [
     ("4NRXx6U8ABQ", "Blinding Lights", "The Weeknd"),
@@ -201,14 +272,63 @@ async def search(q: str = Query(..., min_length=1), db: Session = Depends(get_db
 
 
 @router.get("/trending", response_model=list[SongOut])
-def trending(db: Session = Depends(get_db)):
-    seed_trending(db)
-    return (
-        db.query(Song)
-        .order_by(Song.created_at.asc())
-        .limit(20)
-        .all()
+async def trending(response: Response, db: Session = Depends(get_db)):
+    # Return cached results if fresh.
+    now = time.time()
+    if _TRENDING_CACHE["data"] and now - _TRENDING_CACHE["ts"] < _TRENDING_TTL:
+        # Stale-while-revalidate: serve from memory instantly, let client
+        # know the data is fresh for 60s (CDN/browser) then revalidate.
+        response.headers["Cache-Control"] = (
+            "public, max-age=60, stale-while-revalidate=300"
+        )
+        return _TRENDING_CACHE["data"]
+
+    # Try fetching live trending from YouTube via Piped (async),
+    # then fall back to yt-dlp (sync, runs in threadpool).
+    tracks: list[dict] = []
+    try:
+        tracks = await _fetch_trending_piped()
+        if not tracks:
+            tracks = await run_in_threadpool(_fetch_trending_ytdlp)
+    except Exception:
+        tracks = []
+
+    # If YouTube is unreachable, fall back to seed data.
+    if not tracks:
+        seed_trending(db)
+        songs = (
+            db.query(Song)
+            .order_by(Song.created_at.asc())
+            .limit(20)
+            .all()
+        )
+        response.headers["Cache-Control"] = (
+            "public, max-age=60, stale-while-revalidate=300"
+        )
+        return songs
+
+    # Upsert fetched tracks into the DB and return them.
+    saved: list[Song] = []
+    for t in tracks:
+        if not t.get("yt_id"):
+            continue
+        song = _upsert_song(
+            db,
+            yt_id=t["yt_id"],
+            title=t["title"],
+            artist=t["artist"],
+            thumbnail=t.get("thumbnail") or _yt_thumb(t["yt_id"]),
+            duration=t.get("duration", 0),
+        )
+        saved.append(song)
+
+    # Cache as plain dicts to avoid DetachedInstanceError across requests.
+    _TRENDING_CACHE["data"] = [SongOut.model_validate(s).model_dump() for s in saved]
+    _TRENDING_CACHE["ts"] = now
+    response.headers["Cache-Control"] = (
+        "public, max-age=60, stale-while-revalidate=300"
     )
+    return saved
 
 
 @router.get("/recommend", response_model=list[SongOut])
@@ -218,6 +338,29 @@ def recommend(mood: str = Query(...), db: Session = Depends(get_db)):
         .filter(Song.mood == mood.lower().strip())
         .order_by(Song.created_at.desc())
         .limit(30)
+        .all()
+    )
+    return songs
+
+
+@router.post("/songs/{yt_id}/play")
+def increment_play_count(yt_id: str, db: Session = Depends(get_db)):
+    """Increment the play count for a song."""
+    song = db.query(Song).filter(Song.yt_id == yt_id).first()
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+    song.play_count = (song.play_count or 0) + 1
+    db.commit()
+    return {"play_count": song.play_count}
+
+
+@router.get("/explore", response_model=list[SongOut])
+def explore(limit: int = Query(30, ge=1, le=50), db: Session = Depends(get_db)):
+    """Return songs sorted by play count (most played first)."""
+    songs = (
+        db.query(Song)
+        .order_by(Song.play_count.desc(), Song.created_at.desc())
+        .limit(limit)
         .all()
     )
     return songs

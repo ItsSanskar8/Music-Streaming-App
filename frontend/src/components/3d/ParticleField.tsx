@@ -40,7 +40,6 @@ export default function ParticleField({ count = 900 }: { count?: number }) {
           count={count}
           array={positions}
           itemSize={3}
-          args={[positions, 3]}
         />
       </bufferGeometry>
       <pointsMaterial

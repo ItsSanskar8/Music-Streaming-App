@@ -63,19 +63,24 @@ def add_like(
     return SongOut.model_validate(song)
 
 
-@router.delete("/likes/{song_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/likes/{yt_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_like(
-    song_id: int,
+    yt_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    song = db.query(Song).filter(Song.yt_id == yt_id).first()
+    if not song:
+        # Song was never persisted to the DB (e.g. liked while offline or
+        # from the landing page). Nothing to delete server-side — succeed silently.
+        return None
     link = (
         db.query(LikedSong)
-        .filter(LikedSong.user_id == user.id, LikedSong.song_id == song_id)
+        .filter(LikedSong.user_id == user.id, LikedSong.song_id == song.id)
         .first()
     )
     if not link:
-        raise HTTPException(status_code=404, detail="Not liked")
+        return None
     db.delete(link)
     db.commit()
     return None

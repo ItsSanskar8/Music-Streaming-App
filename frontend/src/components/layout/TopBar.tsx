@@ -3,9 +3,9 @@
 // Nova top bar: search field (routes to /search), ⌘K command-palette trigger,
 // a Premium pill, notifications, and the user profile chip.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Search, Command, Bell, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUI } from "@/contexts/UIContext";
@@ -15,6 +15,16 @@ export default function TopBar() {
   const { user } = useAuth();
   const { openCommand } = useUI();
   const [q, setQ] = useState("");
+  const pathname = usePathname();
+  const prevPathname = useRef(pathname);
+
+  // Clear TopBar search input only when navigating TO /search from another route.
+  useEffect(() => {
+    if (pathname === "/search" && prevPathname.current !== "/search") {
+      setQ("");
+    }
+    prevPathname.current = pathname;
+  }, [pathname]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();

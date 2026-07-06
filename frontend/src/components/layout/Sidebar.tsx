@@ -26,13 +26,13 @@ import { listPlaylists, type PlaylistSummary } from "@/services/playlistsApi";
 
 const NAV = [
   { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/search", label: "Explore", icon: Compass },
+  { href: "/explore", label: "Explore", icon: Compass },
   { href: "/trending", label: "Trending", icon: TrendingUp },
   { href: "/library", label: "Library", icon: Library },
   { href: "/playlists", label: "Playlists", icon: ListMusic },
   { href: "/liked", label: "Liked Songs", icon: Heart },
   { href: "/downloads", label: "Downloads", icon: Download },
-  { href: "/mood-ai", label: "Mood AI", icon: Sparkles },
+  { href: "/mood-match", label: "Mood Match", icon: Sparkles },
   { href: "/recently-played", label: "Recently Played", icon: Clock },
 ];
 
@@ -52,7 +52,7 @@ export default function Sidebar() {
   }, [user]);
 
   return (
-    <aside className="z-30 flex h-screen w-[72px] flex-shrink-0 flex-col border-r border-white/[0.06] bg-white/[0.02] backdrop-blur-2xl md:w-[260px]">
+    <aside className="z-30 flex h-full w-[72px] flex-shrink-0 flex-col border-r border-white/[0.06] bg-white/[0.02] backdrop-blur-2xl md:w-[260px]">
       {/* Logo */}
       <Link href="/dashboard" className="flex h-20 items-center gap-3 px-4 md:px-6">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-nova-blue to-nova-cyan shadow-glow-cyan">

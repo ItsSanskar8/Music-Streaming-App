@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from database import Base, SessionLocal, engine
 from routes import auth as auth_routes
@@ -20,6 +21,16 @@ from routes import likes as likes_routes
 async def lifespan(app: FastAPI):
     # Create tables and seed trending songs on startup.
     Base.metadata.create_all(bind=engine)
+
+    # --- SQLite migration: add play_count column if missing ---
+    with engine.connect() as conn:
+        cols = [r[1] for r in conn.execute(
+            text("PRAGMA table_info(songs)")
+        ).fetchall()]
+        if "play_count" not in cols:
+            conn.execute(text("ALTER TABLE songs ADD COLUMN play_count INTEGER DEFAULT 0"))
+            conn.commit()
+
     db = SessionLocal()
     try:
         music_routes.seed_trending(db)

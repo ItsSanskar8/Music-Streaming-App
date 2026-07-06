@@ -49,6 +49,7 @@ export default function BottomPlayer() {
     repeat,
     toggleShuffle,
     toggleRepeat,
+    addDownload,
   } = usePlayer();
   const { toggleQueue, toggleNowPlaying, queueOpen, nowPlayingOpen } = useUI();
   const [downloading, setDownloading] = useState(false);
@@ -59,6 +60,7 @@ export default function BottomPlayer() {
   const handleDownload = () => {
     if (!current || current.isLocal) return;
     setDownloading(true);
+    addDownload(current);
     triggerDownload(current);
     setTimeout(() => setDownloading(false), 2500);
   };

@@ -77,7 +77,7 @@ export default function QueueDrawer() {
                     return (
                       <div
                         key={s.yt_id}
-                        className={`group flex items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-white/[0.04] ${
+                        className={`group flex items-center rounded-xl px-3 py-2 transition-colors hover:bg-white/[0.04] ${
                           active ? "bg-white/[0.05]" : ""
                         }`}
                       >
@@ -92,9 +92,9 @@ export default function QueueDrawer() {
                         <img
                           src={s.thumbnail || ""}
                           alt=""
-                          className="h-10 w-10 rounded-lg object-cover ring-1 ring-white/10"
+                          className="ml-3 h-10 w-10 rounded-lg object-cover ring-1 ring-white/10"
                         />
-                        <div className="min-w-0 flex-1">
+                        <div className="ml-3 min-w-0 flex-1">
                           <p
                             className={`truncate text-sm font-medium ${
                               active ? "text-brand-cyan" : "text-white"
@@ -106,20 +106,24 @@ export default function QueueDrawer() {
                             {s.artist}
                           </p>
                         </div>
-                        <button
-                          onClick={() => playFromQueue(s.yt_id)}
-                          className="rounded-full p-2 text-white/50 transition-colors hover:text-white"
-                          aria-label="Play"
-                        >
-                          <Play size={15} className="fill-current" />
-                        </button>
-                        <button
-                          onClick={() => removeFromQueue(s.yt_id)}
-                          className="rounded-full p-2 text-white/40 opacity-0 transition-all hover:text-brand-rose group-hover:opacity-100"
-                          aria-label="Remove"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        <span className="ml-1 flex h-7 w-7 items-center justify-center">
+                          <button
+                            onClick={() => playFromQueue(s.yt_id)}
+                            className="rounded-full text-white/50 transition-colors hover:text-white"
+                            aria-label="Play"
+                          >
+                            <Play size={15} className="fill-current" />
+                          </button>
+                        </span>
+                        <span className="ml-1 flex h-7 w-7 items-center justify-center">
+                          <button
+                            onClick={() => removeFromQueue(s.yt_id)}
+                            className="rounded-full text-white/40 opacity-0 transition-all hover:text-brand-rose group-hover:opacity-100"
+                            aria-label="Remove"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </span>
                       </div>
                     );
                   })

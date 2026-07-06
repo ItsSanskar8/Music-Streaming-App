@@ -4,13 +4,6 @@
 // the FastAPI stream proxy (GET /api/stream/{yt_id}) — OR a local blob URL for
 // imported files. Because the backend honors Range requests, setting
 // `audio.currentTime` seeks correctly.
-//
-// NOTE (v2 upgrade): This context was EXTENDED additively. The original
-// streaming/seeking logic is untouched. New, purely-additive features:
-//   likedSongs/toggleLike, recentlyPlayed, catalog/registerSongs,
-//   removeFromQueue/clearQueue, shuffle/repeat, and toast notifications.
-// Convenience aliases (currentSong, pauseSong, nextSong, prevSong) are also
-// exposed so both old and new components compile.
 
 import {
   createContext,
@@ -23,10 +16,10 @@ import {
 } from "react";
 import toast from "react-hot-toast";
 import type { Song } from "@/types";
-import { getStreamUrl } from "@/services/api";
+import { getStreamUrl, incrementPlayCount, tokenStore } from "@/services/api";
+import { addLike, listLikes, removeLike } from "@/services/likesApi";
 
 interface PlayerContextValue {
-  // --- original API (unchanged) ---
   current: Song | null;
   queue: Song[];
   isPlaying: boolean;
@@ -40,9 +33,7 @@ interface PlayerContextValue {
   seek: (time: number) => void;
   setVolume: (v: number) => void;
   addToQueue: (song: Song) => void;
-
-  // --- v2 additions ---
-  currentSong: Song | null; // alias of `current`
+  currentSong: Song | null;
   pauseSong: () => void;
   nextSong: () => void;
   prevSong: () => void;
@@ -59,11 +50,18 @@ interface PlayerContextValue {
   repeat: boolean;
   toggleShuffle: () => void;
   toggleRepeat: () => void;
+  // Downloads
+  downloadedSongs: Song[];
+  addDownload: (song: Song) => void;
+  removeDownload: (ytId: string) => void;
+  isDownloaded: (song: Song) => boolean;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 const LIKED_KEY = "nova_liked_songs";
+const DL_KEY = "nova_downloads";
+const RP_KEY = "nova_recently_played";
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -75,12 +73,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(1);
 
-  // v2 state
   const [likedSongs, setLikedSongs] = useState<Song[]>([]);
-  const [recentlyPlayed, setRecentlyPlayed] = useState<Song[]>([]);
+  const [recentlyPlayed, setRecentlyPlayed] = useState<Song[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem(RP_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
   const [catalog, setCatalog] = useState<Song[]>([]);
   const [shuffle, setShuffle] = useState(false);
   const [repeat, setRepeat] = useState(false);
+  const [downloadedSongs, setDownloadedSongs] = useState<Song[]>([]);
 
   const current = index >= 0 ? queue[index] ?? null : null;
 
@@ -88,9 +94,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const queueRef = useRef<Song[]>([]);
   const shuffleRef = useRef(false);
   const repeatRef = useRef(false);
+  const likedSongsRef = useRef<Song[]>([]);
   useEffect(() => void (queueRef.current = queue), [queue]);
   useEffect(() => void (shuffleRef.current = shuffle), [shuffle]);
   useEffect(() => void (repeatRef.current = repeat), [repeat]);
+  useEffect(() => void (likedSongsRef.current = likedSongs), [likedSongs]);
 
   const advance = useCallback(() => {
     setIndex((i) => {
@@ -101,17 +109,42 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Load liked songs from localStorage once.
+  // Load liked songs + downloads from localStorage, then hydrate from backend.
   useEffect(() => {
+    let cancelled = false;
     try {
       const raw = localStorage.getItem(LIKED_KEY);
       if (raw) setLikedSongs(JSON.parse(raw));
+      const dlRaw = localStorage.getItem(DL_KEY);
+      if (dlRaw) setDownloadedSongs(JSON.parse(dlRaw));
     } catch {
       /* ignore */
     }
+
+    if (tokenStore.get()) {
+      listLikes()
+        .then((server) => {
+          if (cancelled || !server.length) return;
+          setLikedSongs((prev) => {
+            const byId = new Map(prev.map((s) => [s.yt_id, s]));
+            for (const s of server) byId.set(s.yt_id, s);
+            const merged = Array.from(byId.values());
+            try {
+              localStorage.setItem(LIKED_KEY, JSON.stringify(merged));
+            } catch {
+              /* ignore */
+            }
+            return merged;
+          });
+        })
+        .catch(() => {});
+    }
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Create the audio element once, on the client. (UNCHANGED LOGIC)
+  // Create the audio element once, on the client.
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "auto";
@@ -121,7 +154,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const onTime = () => setCurrentTime(audio.currentTime);
     const onMeta = () => setDuration(audio.duration || 0);
     const onEnd = () => {
-      // v2: honor repeat, else advance (respecting shuffle).
       if (repeatRef.current) {
         audio.currentTime = 0;
         audio.play().catch(() => setIsPlaying(false));
@@ -152,7 +184,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // When the current track changes, point the src and play.
-  // (Original logic + one additive line: local blobs bypass the proxy.)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !current) return;
@@ -161,11 +192,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setDuration(0);
     audio.play().catch(() => setIsPlaying(false));
 
-    // v2: record into "recently played" (dedupe + cap 30).
     setRecentlyPlayed((prev) => {
       const rest = prev.filter((s) => s.yt_id !== current.yt_id);
-      return [current, ...rest].slice(0, 30);
+      const next = [current, ...rest].slice(0, 30);
+      try {
+        localStorage.setItem(RP_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
     });
+
+    // Increment play count on the backend (fire-and-forget).
+    incrementPlayCount(current.yt_id).catch(() => {});
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.yt_id]);
 
@@ -226,7 +266,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const seek = useCallback((time: number) => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.currentTime = time; // triggers a Range request to the backend
+    audio.currentTime = time;
     setCurrentTime(time);
   }, []);
 
@@ -239,16 +279,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const addToQueue = useCallback(
     (song: Song) => {
       registerSongs([song]);
+      const already = queueRef.current.some((s) => s.yt_id === song.yt_id);
+      const id = `queue-${song.yt_id}`;
+      if (already) {
+        toast("Already in queue", { icon: "🎧", id });
+        return;
+      }
       setQueue((q) => {
-        if (q.some((s) => s.yt_id === song.yt_id)) {
-          toast(`Already in queue`, { icon: "🎧" });
-          return q;
-        }
         const nextQueue = [...q, song];
         setIndex((i) => (i < 0 ? nextQueue.length - 1 : i));
         return nextQueue;
       });
-      toast.success(`Added “${song.title}” to queue`);
+      toast.success(`Added "${song.title}" to queue`, { id });
     },
     [registerSongs]
   );
@@ -258,7 +300,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const idx = q.findIndex((s) => s.yt_id === ytId);
       if (idx < 0) return q;
       const nextQueue = q.filter((s) => s.yt_id !== ytId);
-      // Keep `index` pointing at the same current track.
       setIndex((cur) => {
         if (idx < cur) return cur - 1;
         if (idx === cur) return Math.min(cur, nextQueue.length - 1);
@@ -279,41 +320,96 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIndex(() => queueRef.current.findIndex((s) => s.yt_id === ytId));
   }, []);
 
+  // FIX: Use ref to avoid stale closure on rapid like/unlike taps.
   const toggleLike = useCallback((song: Song) => {
-    setLikedSongs((prev) => {
-      const exists = prev.some((s) => s.yt_id === song.yt_id);
-      const nextLiked = exists
-        ? prev.filter((s) => s.yt_id !== song.yt_id)
-        : [song, ...prev];
-      try {
-        localStorage.setItem(LIKED_KEY, JSON.stringify(nextLiked));
-      } catch {
-        /* ignore */
-      }
-      if (exists) toast(`Removed from Liked`, { icon: "💔" });
-      else toast.success(`Liked “${song.title}”`);
-      return nextLiked;
-    });
+    const latest = likedSongsRef.current;
+    const exists = latest.some((s) => s.yt_id === song.yt_id);
+    const nextLiked = exists
+      ? latest.filter((s) => s.yt_id !== song.yt_id)
+      : [song, ...latest];
+
+    setLikedSongs(nextLiked);
+    likedSongsRef.current = nextLiked;
+    try {
+      localStorage.setItem(LIKED_KEY, JSON.stringify(nextLiked));
+    } catch {
+      /* ignore */
+    }
+
+    const id = `like-${song.yt_id}`;
+    if (exists) toast(`Removed from Liked`, { icon: "💔", id });
+    else toast.success(`Liked "${song.title}"`, { id });
+
+    if (tokenStore.get()) {
+      const op = exists
+        ? removeLike(song.yt_id)
+        : addLike(song).then(() => undefined);
+      op.catch(() => {
+        setLikedSongs((cur) => {
+          const rolledBack = exists
+            ? [song, ...cur.filter((s) => s.yt_id !== song.yt_id)]
+            : cur.filter((s) => s.yt_id !== song.yt_id);
+          likedSongsRef.current = rolledBack;
+          try {
+            localStorage.setItem(LIKED_KEY, JSON.stringify(rolledBack));
+          } catch {
+            /* ignore */
+          }
+          return rolledBack;
+        });
+        toast.error("Couldn't sync like — try again", { id });
+      });
+    }
   }, []);
 
   const isLiked = useCallback(
-    (song: Song) => likedSongs.some((s) => s.yt_id === song.yt_id),
-    [likedSongs]
+    (song: Song) => likedSongsRef.current.some((s) => s.yt_id === song.yt_id),
+    []
   );
 
   const toggleShuffle = useCallback(() => {
-    setShuffle((v) => {
-      toast(!v ? "Shuffle on" : "Shuffle off", { icon: "🔀" });
-      return !v;
-    });
+    const nv = !shuffleRef.current;
+    setShuffle(nv);
+    toast(nv ? "Shuffle on" : "Shuffle off", { icon: "🔀", id: "shuffle" });
   }, []);
 
   const toggleRepeat = useCallback(() => {
-    setRepeat((v) => {
-      toast(!v ? "Repeat on" : "Repeat off", { icon: "🔁" });
-      return !v;
+    const nv = !repeatRef.current;
+    setRepeat(nv);
+    toast(nv ? "Repeat on" : "Repeat off", { icon: "🔁", id: "repeat" });
+  }, []);
+
+  // Downloads tracking — stored in localStorage.
+  const addDownload = useCallback((song: Song) => {
+    setDownloadedSongs((prev) => {
+      if (prev.some((s) => s.yt_id === song.yt_id)) return prev;
+      const next = [song, ...prev];
+      try {
+        localStorage.setItem(DL_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
     });
   }, []);
+
+  const removeDownload = useCallback((ytId: string) => {
+    setDownloadedSongs((prev) => {
+      const next = prev.filter((s) => s.yt_id !== ytId);
+      try {
+        localStorage.setItem(DL_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+    toast("Removed from downloads", { icon: "🗑️", id: `dl-${ytId}` });
+  }, []);
+
+  const isDownloaded = useCallback(
+    (song: Song) => downloadedSongs.some((s) => s.yt_id === song.yt_id),
+    [downloadedSongs]
+  );
 
   return (
     <PlayerContext.Provider
@@ -331,7 +427,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         seek,
         setVolume,
         addToQueue,
-        // v2
         currentSong: current,
         pauseSong,
         nextSong: next,
@@ -349,6 +444,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         repeat,
         toggleShuffle,
         toggleRepeat,
+        downloadedSongs,
+        addDownload,
+        removeDownload,
+        isDownloaded,
       }}
     >
       {children}

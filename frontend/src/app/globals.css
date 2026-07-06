@@ -19,15 +19,32 @@
 
 html,
 body {
-  height: 100%;
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
 }
 
 body {
-  background-color: var(--ink);
+  background-color: #030305;
   color: #ffffff;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.011em;
+}
+
+/* Never let a stray wide element create horizontal scroll. */
+#__next,
+main {
+  max-width: 100%;
+}
+
+/* Ensure root wrapper fills viewport. */
+#root,
+#__next {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* --------------------------- Scrollbars ----------------------------- */
@@ -61,37 +78,15 @@ body {
   .glass-strong {
     @apply border border-white/[0.12] bg-white/[0.06] backdrop-blur-2xl shadow-glass-lg;
   }
-  /* Gradient chip / pill. */
-  .pill {
-    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs font-medium text-white/70 backdrop-blur-xl;
-  }
 }
 
 @layer utilities {
-  .preserve-3d {
-    transform-style: preserve-3d;
-  }
-  .backface-hidden {
-    backface-visibility: hidden;
-  }
-  .text-balance {
-    text-wrap: balance;
-  }
   /* Cyan→blue glowing text. */
   .text-glow {
     text-shadow: 0 0 24px rgba(0, 245, 212, 0.45), 0 0 48px rgba(36, 91, 255, 0.25);
   }
   .text-gradient {
     @apply bg-gradient-to-r from-white via-nova-cyan to-nova-blue bg-clip-text text-transparent;
-  }
-  /* Full-page vertical scroll-snap container for the landing sections. */
-  .snap-y-container {
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
-  }
-  .snap-section {
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
   }
 }
 
@@ -162,11 +157,6 @@ input[type="range"].nova-range::-moz-range-thumb {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
-@keyframes nova-pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(0, 245, 212, 0.45); }
-  70% { box-shadow: 0 0 0 12px rgba(0, 245, 212, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 245, 212, 0); }
-}
 @keyframes nova-shimmer {
   0% { background-position: -450px 0; }
   100% { background-position: 450px 0; }
@@ -175,9 +165,14 @@ input[type="range"].nova-range::-moz-range-thumb {
   0%, 100% { transform: scaleY(0.28); }
   50% { transform: scaleY(1); }
 }
+@keyframes mood-shimmer-sweep {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 
 .animate-float { animation: nova-float 6s ease-in-out infinite; }
-.animate-pulse-ring { animation: nova-pulse-ring 1.8s ease-out infinite; }
+.animate-mood-shimmer { animation: mood-shimmer-sweep 8s ease-in-out infinite; }
 
 /* Skeleton shimmer surface. */
 .skeleton {

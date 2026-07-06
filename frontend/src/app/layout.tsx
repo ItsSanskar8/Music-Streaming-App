@@ -32,12 +32,31 @@ export default function RootLayout({
             <UIProvider>
               <Toaster
                 position="top-right"
+                gutter={12}
                 toastOptions={{
+                  duration: 3000,
                   style: {
-                    background: "rgba(10, 15, 31, 0.95)",
+                    minWidth: "320px",
+                    maxWidth: "min(520px, calc(100vw - 32px))",
+                    padding: "14px 18px",
+                    background: "rgba(5, 5, 8, 0.72)",
                     color: "#FFFFFF",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                    borderRadius: "20px",
                     backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    boxShadow:
+                      "0 12px 48px rgba(0,0,0,0.6), 0 0 30px -8px rgba(0,245,212,0.25)",
+                  },
+                  success: { iconTheme: { primary: "#00F5D4", secondary: "#050505" } },
+                  error: {
+                    iconTheme: { primary: "#FB7185", secondary: "#050505" },
+                    style: {
+                      boxShadow:
+                        "0 12px 48px rgba(0,0,0,0.6), 0 0 30px -8px rgba(251,113,133,0.3)",
+                    },
                   },
                 }}
               />

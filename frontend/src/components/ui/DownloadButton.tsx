@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Check, X } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Song } from "@/types";
 import { triggerDownload } from "@/services/api";
+import { usePlayer } from "@/contexts/PlayerContext";
 
-// Triggers a backend MP3 download (GET /api/download/{yt_id}) via a hidden
-// anchor. Local (imported) songs can't be re-downloaded from the backend.
+// Downloads or removes a song from the downloads list.
 
 interface Props {
   song: Song;
@@ -17,28 +17,54 @@ interface Props {
 
 export default function DownloadButton({ song, size = 18, className = "" }: Props) {
   const [busy, setBusy] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const { addDownload, removeDownload, isDownloaded } = usePlayer();
+  const downloaded = isDownloaded(song);
 
   const onClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (downloaded) {
+      removeDownload(song.yt_id);
+      return;
+    }
+
     if (song.isLocal) {
       toast("This track is a local import", { icon: "💾" });
       return;
     }
     setBusy(true);
+    addDownload(song);
     triggerDownload(song);
-    toast.success(`Preparing “${song.title}”…`);
-    // The browser handles the streamed attachment; clear the spinner shortly.
+    toast.success(`Preparing "${song.title}"…`);
     setTimeout(() => setBusy(false), 2500);
   };
 
   return (
-    <button
-      onClick={onClick}
-      disabled={busy}
-      aria-label="Download MP3"
-      className={`text-white/45 transition-colors hover:text-nova-cyan disabled:opacity-60 ${className}`}
-    >
-      {busy ? <Loader2 size={size} className="animate-spin" /> : <Download size={size} />}
-    </button>
+    <span className="ml-0.5 flex h-7 w-7 items-center justify-center">
+      <button
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        disabled={busy}
+        aria-label={downloaded ? "Remove from downloads" : "Download MP3"}
+        title={downloaded ? "Remove from downloads" : "Download MP3"}
+        className={`transition-colors disabled:opacity-60 ${
+          downloaded
+            ? hovered
+              ? "text-red-400"
+              : "text-nova-cyan"
+            : "text-white/45 hover:text-nova-cyan"
+        } ${className}`}
+      >
+        {busy ? (
+          <Loader2 size={size} className="animate-spin" />
+        ) : downloaded ? (
+          hovered ? <X size={size} /> : <Check size={size} />
+        ) : (
+          <Download size={size} />
+        )}
+      </button>
+    </span>
   );
 }

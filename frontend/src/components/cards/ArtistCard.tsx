@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -10,11 +11,12 @@ interface Props {
   image?: string | null;
   meta?: string;
   index?: number;
+  href?: string;
   onClick?: () => void;
 }
 
-export default function ArtistCard({ name, image, meta, index = 0, onClick }: Props) {
-  return (
+export default function ArtistCard({ name, image, meta, index = 0, href, onClick }: Props) {
+  const inner = (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -37,8 +39,11 @@ export default function ArtistCard({ name, image, meta, index = 0, onClick }: Pr
         )}
         <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
-      <p className="mt-3 truncate text-sm font-semibold text-white">{name}</p>
+      <p className="mt-2 truncate text-sm font-semibold text-white">{name}</p>
       {meta && <p className="truncate text-xs text-white/45">{meta}</p>}
     </motion.div>
   );
+
+  if (href) return <Link href={href}>{inner}</Link>;
+  return <div>{inner}</div>;
 }

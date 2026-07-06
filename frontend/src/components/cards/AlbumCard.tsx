@@ -27,7 +27,7 @@ export default function AlbumCard({ title, artist, cover, index = 0, onPlay, onC
       onClick={onClick}
       className="group w-full cursor-pointer"
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-white/[0.07] bg-white/5 shadow-glass">
+      <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-white/[0.07] bg-white/5 shadow-glass">
         {cover && (
           <Image
             src={cover}
@@ -51,7 +51,7 @@ export default function AlbumCard({ title, artist, cover, index = 0, onPlay, onC
           </div>
         )}
       </div>
-      <div className="mt-3 px-1">
+      <div className="mt-2 px-1">
         <p className="truncate text-sm font-semibold text-white">{title}</p>
         <p className="truncate text-xs text-white/50">{artist}</p>
       </div>

@@ -15,15 +15,17 @@ interface Props {
 export default function QueueButton({ song, size = 18, className = "" }: Props) {
   const { addToQueue } = usePlayer();
   return (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        addToQueue(song);
-      }}
-      aria-label="Add to queue"
-      className={`text-white/45 transition-colors hover:text-white ${className}`}
-    >
-      <ListPlus size={size} />
-    </button>
+    <span className="ml-0.5 flex h-7 w-7 items-center justify-center">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          addToQueue(song);
+        }}
+        aria-label="Add to queue"
+        className={`text-white/45 transition-colors hover:text-white ${className}`}
+      >
+        <ListPlus size={size} />
+      </button>
+    </span>
   );
 }

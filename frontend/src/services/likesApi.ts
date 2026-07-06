@@ -22,6 +22,6 @@ export async function addLike(song: Song): Promise<Song> {
   return data;
 }
 
-export async function removeLike(songId: number): Promise<void> {
-  await api.delete(`/likes/${songId}`);
+export async function removeLike(ytId: string): Promise<void> {
+  await api.delete(`/likes/${ytId}`);
 }

@@ -1,10 +1,6 @@
-import ComingSoon from "@/components/ui/ComingSoon";
+import { redirect } from "next/navigation";
 
-export default function MoodAIPage() {
-  return (
-    <ComingSoon
-      title="Mood AI"
-      description="Pick a feeling and let Nova compose your soundtrack. The full immersive Mood AI page arrives in the next Nova phase."
-    />
-  );
+// Redirect /mood-ai → /mood-match for backwards compatibility.
+export default function MoodAIRedirect() {
+  redirect("/mood-match");
 }

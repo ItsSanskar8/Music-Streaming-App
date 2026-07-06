@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
 import BottomPlayer from "@/components/layout/BottomPlayer";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import QueueDrawer from "@/components/layout/QueueDrawer";
 import RightNowPlayingPanel from "@/components/layout/RightNowPlayingPanel";
 import CommandPalette from "@/components/ui/CommandPalette";
@@ -27,9 +28,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div className="flex min-h-screen">
+      <div className="flex h-screen overflow-hidden">
         <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <TopBar />
           {/* pb-28 clears the persistent 96px BottomPlayer. */}
           <main className="flex-1 pb-28">{children}</main>

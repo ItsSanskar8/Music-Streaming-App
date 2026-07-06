@@ -48,8 +48,6 @@ const config: Config = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        "nova-glow":
-          "radial-gradient(120% 120% at 50% 0%, rgba(36,91,255,0.18) 0%, rgba(0,245,212,0.06) 40%, transparent 70%)",
       },
       backdropBlur: {
         xs: "2px",

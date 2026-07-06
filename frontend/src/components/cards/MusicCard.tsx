@@ -6,6 +6,7 @@ import type { Song } from "@/types";
 import { usePlayer } from "@/contexts/PlayerContext";
 import PlayButton from "@/components/ui/PlayButton";
 import LikeButton from "@/components/ui/LikeButton";
+import AddToPlaylistButton from "@/components/ui/AddToPlaylistButton";
 import AnimatedWaveform from "@/components/ui/AnimatedWaveform";
 
 // Vertical music card — cover art, hover play overlay + waveform, title/artist.
@@ -70,7 +71,10 @@ export default function MusicCard({ song, list, index = 0 }: Props) {
           </p>
           <p className="truncate text-xs text-white/50">{song.artist}</p>
         </div>
-        <LikeButton song={song} size={16} className="mt-0.5" />
+        <div className="flex items-center gap-1 mt-0.5">
+          <AddToPlaylistButton song={song} size={15} />
+          <LikeButton song={song} size={15} />
+        </div>
       </div>
     </motion.div>
   );
