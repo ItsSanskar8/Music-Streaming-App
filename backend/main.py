@@ -3,6 +3,7 @@
 Run:  uvicorn main:app --reload --port 8000
 """
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -41,14 +42,19 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Nova Music API", version="1.0.0", lifespan=lifespan)
 
-# CORS — the Next.js dev server runs on :3000. expose_headers lets the browser
-# read Content-Range/Accept-Ranges for seeking-related requests.
+# CORS — origins come from ALLOWED_ORIGINS (comma-separated) so the deployed
+# Vercel frontend can be added without a code change. Falls back to the local
+# Next.js dev server. expose_headers lets the browser read Content-Range/
+# Accept-Ranges for seeking-related requests.
+allowed_origins = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000",
+).split(",")
+allowed_origins = [origin.strip() for origin in allowed_origins if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

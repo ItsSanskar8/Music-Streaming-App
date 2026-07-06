@@ -1,12 +1,15 @@
 """Password hashing (bcrypt) and JWT encode/decode helpers."""
 
 import datetime
+import os
 
 import bcrypt
 import jwt
 
-# NOTE: In production load this from an environment variable / secret manager.
-SECRET_KEY = "nova-super-secret-change-me-in-production"
+# Loaded from the environment in production (set SECRET_KEY on Render). The
+# fallback is for local dev only — never rely on it for a deployed service,
+# since rotating it invalidates every issued token.
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-only-for-local")
 ALGORITHM = "HS256"
 TOKEN_TTL_DAYS = 7
 
