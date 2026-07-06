@@ -1,13 +1,13 @@
 "use client";
 
 // Nova top bar: search field (routes to /search), ⌘K command-palette trigger,
-// a Premium pill, notifications, and the user profile chip.
+// a Premium pill (links to /premium), and the user profile chip.
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Command, Bell, Sparkles } from "lucide-react";
+import { Search, Command, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUI } from "@/contexts/UIContext";
 
@@ -58,21 +58,15 @@ export default function TopBar() {
       </motion.button>
 
       <div className="ml-auto flex items-center gap-3">
-        <motion.button
-          whileTap={{ scale: 0.93 }}
-          className="hidden items-center gap-1.5 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-4 py-2 text-xs font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03] md:flex"
-        >
-          <Sparkles size={13} />
-          Premium
-        </motion.button>
-
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          className="hidden text-white/50 transition-colors hover:text-white sm:block"
-          aria-label="Notifications"
-        >
-          <Bell size={18} />
-        </motion.button>
+        <motion.div whileTap={{ scale: 0.93 }} className="hidden md:block">
+          <Link
+            href="/premium"
+            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-4 py-2 text-xs font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+          >
+            <Sparkles size={13} />
+            Premium
+          </Link>
+        </motion.div>
 
         {user && (
           <motion.div whileTap={{ scale: 0.97 }}>

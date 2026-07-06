@@ -164,8 +164,10 @@ function SearchInner() {
 
               {/* Top Results — full-width song list */}
               <div className="mb-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-2 backdrop-blur-xl">
+                {/* No `list` — playing a search result plays only that track.
+                    Users build the queue deliberately via each row's QueueButton. */}
                 {results.slice(0, 10).map((s, i) => (
-                  <SongRow key={s.yt_id} song={s} list={results} rank={i + 1} index={i} />
+                  <SongRow key={s.yt_id} song={s} rank={i + 1} index={i} />
                 ))}
               </div>
 
@@ -180,7 +182,6 @@ function SearchInner() {
                       <MusicCard
                         key={artist}
                         song={artistSongs[0]}
-                        list={artistSongs}
                         index={i}
                       />
                     ))}

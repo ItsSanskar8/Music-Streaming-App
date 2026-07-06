@@ -21,9 +21,11 @@ interface Props {
   song: Song;
   size?: number;
   className?: string;
+  /** Open the dropdown upward — for use in the bottom player. */
+  dropUp?: boolean;
 }
 
-export default function AddToPlaylistButton({ song, size = 18, className = "" }: Props) {
+export default function AddToPlaylistButton({ song, size = 18, className = "", dropUp = false }: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [playlists, setPlaylists] = useState<PlaylistSummary[]>([]);
@@ -124,7 +126,7 @@ export default function AddToPlaylistButton({ song, size = 18, className = "" }:
 
   return (
     <span className="ml-0.5 flex h-7 w-7 items-center justify-center">
-    <div ref={ref} className="relative w-full">
+    <div ref={ref} className="relative flex h-full w-full items-center justify-center">
       <motion.button
         whileTap={{ scale: 0.85 }}
         onClick={(e) => {
@@ -141,7 +143,9 @@ export default function AddToPlaylistButton({ song, size = 18, className = "" }:
       {open && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute right-0 top-full z-50 mt-3 w-64 overflow-hidden rounded-2xl border border-white/[0.1] bg-nova-bg2/95 shadow-2xl backdrop-blur-2xl"
+          className={`absolute right-0 z-50 w-64 overflow-hidden rounded-2xl border border-white/[0.1] bg-nova-bg2/95 shadow-2xl backdrop-blur-2xl ${
+            dropUp ? "bottom-full mb-3" : "top-full mt-3"
+          }`}
         >
           <div className="border-b border-white/[0.08] px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-white/40">

@@ -20,6 +20,7 @@ import {
   Clock,
   LogOut,
   Music2,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { listPlaylists, type PlaylistSummary } from "@/services/playlistsApi";
@@ -92,6 +93,26 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Premium — highlighted, it's free */}
+      <div className="mt-2 px-3 md:px-4">
+        <Link
+          href="/premium"
+          className={`group relative flex items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all duration-300 ${
+            pathname === "/premium"
+              ? "border-nova-gold/40 text-white"
+              : "border-nova-gold/20 text-white/70 hover:border-nova-gold/40 hover:text-white"
+          }`}
+          style={{ boxShadow: "0 0 24px -6px rgba(251,191,36,0.25)" }}
+        >
+          <span className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-nova-gold/15 via-nova-violet/10 to-transparent" />
+          <Crown size={19} className="flex-shrink-0 text-nova-gold" />
+          <span className="hidden md:block">Premium</span>
+          <span className="ml-auto hidden rounded-full bg-nova-cyan/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-nova-cyan md:inline">
+            Free
+          </span>
+        </Link>
+      </div>
 
       {/* User playlists */}
       <div className="mt-4 hidden min-h-0 flex-1 flex-col border-t border-white/[0.06] px-4 pt-4 md:flex">

@@ -29,6 +29,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 import { usePlayer } from "@/contexts/PlayerContext";
 import { useUI } from "@/contexts/UIContext";
 import { triggerDownload } from "@/services/api";
+import AddToPlaylistButton from "@/components/ui/AddToPlaylistButton";
 
 function fmt(sec: number): string {
   if (!isFinite(sec) || sec <= 0) return "0:00";
@@ -255,6 +256,8 @@ export default function BottomPlayer() {
               <Download size={18} />
             )}
           </motion.button>
+          {/* Add to playlist — only active while a track is loaded. */}
+          {current && <AddToPlaylistButton song={current} size={18} dropUp />}
           <motion.button
             whileTap={TAP}
             onClick={toggleQueue}

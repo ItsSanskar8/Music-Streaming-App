@@ -78,7 +78,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return [];
     try {
       const raw = localStorage.getItem(RP_KEY);
-      return raw ? JSON.parse(raw) : [];
+      // Cap on load too, so pre-existing longer histories respect the limit.
+      return raw ? (JSON.parse(raw) as Song[]).slice(0, 20) : [];
     } catch {
       return [];
     }
@@ -194,7 +195,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
     setRecentlyPlayed((prev) => {
       const rest = prev.filter((s) => s.yt_id !== current.yt_id);
-      const next = [current, ...rest].slice(0, 30);
+      // Keep only the 20 most recent tracks.
+      const next = [current, ...rest].slice(0, 20);
       try {
         localStorage.setItem(RP_KEY, JSON.stringify(next));
       } catch {

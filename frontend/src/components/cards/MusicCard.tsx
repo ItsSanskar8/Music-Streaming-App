@@ -62,7 +62,9 @@ export default function MusicCard({ song, list, index = 0 }: Props) {
             onClick={(e) => {
               e.stopPropagation();
               if (isCurrent) togglePlay();
-              else playSong(song, list ?? [song]);
+              // No `list` → play just this song and append it, rather than
+              // replacing the queue with a single-item list.
+              else playSong(song, list);
             }}
           />
         </div>
