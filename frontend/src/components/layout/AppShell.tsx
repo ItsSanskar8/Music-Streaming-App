@@ -47,8 +47,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <TopBar />
-          {/* pb-28 clears the persistent 96px BottomPlayer. */}
-          <main className="flex-1 pb-28">
+          {/* Clear the fixed chrome: on mobile the 96px player stacks on the
+              64px bottom nav (pb-40); on md+ only the 96px player (pb-28). */}
+          <main className="flex-1 pb-40 md:pb-28">
             <PageTransition>
               {children}
             </PageTransition>
@@ -56,6 +57,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <BottomPlayer />
+      <MobileBottomNav />
       <QueueDrawer />
       <RightNowPlayingPanel />
       <CommandPalette />

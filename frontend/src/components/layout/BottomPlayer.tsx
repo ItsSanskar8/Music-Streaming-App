@@ -78,9 +78,9 @@ export default function BottomPlayer() {
       initial={{ y: 40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-      className="fixed inset-x-0 bottom-0 z-40 h-24 border-t border-white/[0.08] bg-nova-bg2/70 shadow-[0_-8px_40px_rgba(0,0,0,0.5)] backdrop-blur-3xl"
+      className="fixed inset-x-0 bottom-16 z-40 h-24 border-t border-white/[0.08] bg-nova-bg2/70 shadow-[0_-8px_40px_rgba(0,0,0,0.5)] backdrop-blur-3xl md:bottom-0"
     >
-      <div className="mx-auto flex h-full max-w-[1700px] items-center gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-full max-w-[1700px] items-center gap-2 px-3 sm:gap-4 sm:px-6">
         {/* ════ Track Info ════ */}
         <div className="flex min-w-0 flex-1 items-center gap-3">
           {current ? (

@@ -40,7 +40,7 @@ export default function RightNowPlayingPanel() {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 360, opacity: 0 }}
           transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-          className="fixed right-0 top-0 z-30 h-screen w-[340px] border-l border-white/[0.08] bg-brand-navy/60 p-5 pb-28 backdrop-blur-2xl"
+          className="fixed right-0 top-0 z-30 h-screen w-full max-w-[340px] border-l border-white/[0.08] bg-brand-navy/60 p-5 pb-28 backdrop-blur-2xl sm:w-[340px]"
         >
           <div className="mb-5 flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-widest text-white/40">
