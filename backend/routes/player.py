@@ -164,10 +164,13 @@ async def stream(yt_id: str, request: Request):
         raise HTTPException(status_code=status, detail="Upstream rejected the request")
 
     # Mirror the upstream's range/length headers so the browser can seek.
+    # X-Audio-Source lets you see in DevTools whether real YouTube audio played
+    # or the demo fallback kicked in (early warning that proxies need attention).
     resp_headers = {
         "Accept-Ranges": "bytes",
         "Content-Type": upstream.headers.get("Content-Type", "audio/mpeg"),
         "Cache-Control": "no-store",
+        "X-Audio-Source": "fallback" if used_fallback else "youtube",
     }
     if "Content-Range" in upstream.headers:
         resp_headers["Content-Range"] = upstream.headers["Content-Range"]
