@@ -1,6 +1,8 @@
 "use client";
 
-// Nova glass sidebar. 72px icon rail on mobile → 260px with labels on desktop.
+// Nova glass sidebar. Desktop-only (hidden below md) — on mobile the
+// MobileBottomNav handles navigation, so rendering this rail there would
+// duplicate nav and steal horizontal space. 260px with labels on desktop.
 // Active link gets a royal-blue→cyan glow. Shows the signed-in user's playlists
 // (from the additive /api/playlists route) beneath the primary nav.
 
@@ -56,7 +58,7 @@ export default function Sidebar() {
   }, [user]);
 
   return (
-    <aside className="z-30 flex h-full w-[72px] flex-shrink-0 flex-col border-r border-white/[0.06] bg-white/[0.02] backdrop-blur-2xl md:w-[260px]">
+    <aside className="z-30 hidden h-full w-[260px] flex-shrink-0 flex-col border-r border-white/[0.06] bg-white/[0.02] backdrop-blur-2xl md:flex">
       {/* Logo */}
       <Link href="/dashboard" className="flex h-20 items-center gap-3 px-4 md:px-6">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-nova-blue to-nova-cyan shadow-glow-cyan">

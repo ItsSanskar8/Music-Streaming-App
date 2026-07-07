@@ -42,7 +42,7 @@ export default function SongRow({ song, list, rank, index = 0, showActions = fal
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: Math.min(index * 0.03, 0.4) }}
       onClick={onPlay}
-      className={`group flex cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 transition-colors ${
+      className={`group flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2.5 transition-colors sm:gap-4 sm:px-3 ${
         isCurrent ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"
       }`}
     >
@@ -91,8 +91,9 @@ export default function SongRow({ song, list, rank, index = 0, showActions = fal
         {song.mood}
       </span>
 
-      {/* Actions (reveal on hover, or always visible when showActions is true) */}
-      <div className={`flex items-center transition-opacity focus-within:opacity-100 ${showActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+      {/* Actions — hidden on mobile (no hover; they'd steal width from the
+          title). On sm+ they reveal on hover, or stay visible when showActions. */}
+      <div className={`hidden items-center transition-opacity focus-within:opacity-100 sm:flex ${showActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
         <QueueButton song={song} size={17} />
         <AddToPlaylistButton song={song} size={17} />
         <DownloadButton song={song} size={17} />

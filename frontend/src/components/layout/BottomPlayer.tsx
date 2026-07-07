@@ -240,8 +240,9 @@ export default function BottomPlayer() {
           </div>
         </div>
 
-        {/* ════ Right Controls ════ */}
-        <div className="flex flex-1 items-center justify-end gap-3">
+        {/* ════ Right Controls ════ (hidden on mobile — crowds the transport;
+            these actions live on the now-playing view / each song row) */}
+        <div className="hidden flex-1 items-center justify-end gap-3 sm:flex">
           <motion.button
             whileTap={TAP}
             onClick={handleDownload}
