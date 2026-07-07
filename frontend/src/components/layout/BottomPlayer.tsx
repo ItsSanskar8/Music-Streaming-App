@@ -6,7 +6,7 @@
 //  smooth micro-interactions throughout.
 // ============================================================================
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -27,10 +27,24 @@ import {
 
 const TAP = { scale: 0.9 };
 const EASE = [0.22, 1, 0.36, 1] as const;
+
 import { usePlayer } from "@/contexts/PlayerContext";
 import { useUI } from "@/contexts/UIContext";
 import { triggerDownload } from "@/services/api";
 import AddToPlaylistButton from "@/components/ui/AddToPlaylistButton";
+
+/** Detect touch-capable device (no hover, coarse pointer). Checks once + listens for changes. */
+function useIsTouchDevice() {
+  const [touch, setTouch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(hover: none) and (pointer: coarse)");
+    setTouch(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setTouch(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return touch;
+}
 
 function fmt(sec: number): string {
   if (!isFinite(sec) || sec <= 0) return "0:00";
@@ -61,8 +75,8 @@ export default function BottomPlayer() {
   } = usePlayer();
   const router = useRouter();
   const { toggleQueue, toggleNowPlaying, queueOpen, nowPlayingOpen } = useUI();
+  const isTouch = useIsTouchDevice();
   const [downloading, setDownloading] = useState(false);
-  const [seekHover, setSeekHover] = useState(false);
 
   const progress = duration ? (currentTime / duration) * 100 : 0;
   const liked = current ? isLiked(current) : false;
@@ -80,18 +94,40 @@ export default function BottomPlayer() {
       initial={{ y: 40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-      drag="y"
-      dragConstraints={{ top: 0, bottom: 0 }}
-      dragElastic={0.08}
-      onDragEnd={(_, info) => {
-        if (info.offset.y < -60 || (info.offset.y < -20 && info.velocity.y < -500)) {
-          current && router.push("/now-playing");
-        }
-      }}
+      {...(isTouch
+        ? // On touch devices, drag intercepts every touch event and blocks clicks.
+          // Use a simple onClick on the drag handle area instead.
+          {}
+        : {
+            drag: "y" as const,
+            dragConstraints: { top: 0, bottom: 0 },
+            dragElastic: 0.08,
+            onDragEnd: (_: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
+              if (
+                info.offset.y < -60 ||
+                (info.offset.y < -20 && info.velocity.y < -500)
+              ) {
+                current && router.push("/now-playing");
+              }
+            },
+          })}
       className="fixed inset-x-0 bottom-16 z-40 h-24 border-t border-white/[0.08] bg-nova-bg2/70 shadow-[0_-8px_40px_rgba(0,0,0,0.5)] backdrop-blur-3xl md:bottom-0"
+      // On touch devices, prevent accidental scroll capture from the player area
+      style={isTouch ? { touchAction: "pan-y" } : undefined}
     >
       {/* Drag handle — visible on mobile as swipe-up affordance */}
-      <div className="absolute inset-x-0 top-0 flex justify-center md:hidden">
+      <div
+        className="absolute inset-x-0 top-0 flex justify-center md:hidden"
+        onClick={() => current && router.push("/now-playing")}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if ((e.key === "Enter" || e.key === " ") && current) {
+            e.preventDefault();
+            router.push("/now-playing");
+          }
+        }}
+      >
         <motion.div
           whileTap={{ scale: 0.9 }}
           className="mt-1.5 h-1 w-10 rounded-full bg-white/20"
@@ -239,17 +275,10 @@ export default function BottomPlayer() {
             </motion.button>
           </div>
 
-          <div
-            className="flex w-full max-w-2xl items-center gap-2"
-            onMouseEnter={() => setSeekHover(true)}
-            onMouseLeave={() => setSeekHover(false)}
-          >
-            <motion.span
-              animate={{ width: seekHover ? 48 : 40 }}
-              className="text-right text-[11px] tabular-nums text-white/40 overflow-hidden"
-            >
+          <div className="flex w-full max-w-2xl items-center gap-2">
+            <span className="text-right text-[11px] tabular-nums text-white/40 w-10 overflow-hidden">
               {fmt(currentTime)}
-            </motion.span>
+            </span>
             <input
               type="range"
               min={0}
@@ -263,12 +292,9 @@ export default function BottomPlayer() {
               }}
               aria-label="Seek"
             />
-            <motion.span
-              animate={{ width: seekHover ? 48 : 40 }}
-              className="text-[11px] tabular-nums text-white/40 overflow-hidden"
-            >
+            <span className="text-[11px] tabular-nums text-white/40 w-10 overflow-hidden">
               {fmt(duration)}
-            </motion.span>
+            </span>
           </div>
         </div>
 

@@ -479,6 +479,38 @@ input[type="range"].nova-range::-moz-range-thumb {
 }
 
 /* ===================================================================== */
+/*  Mobile performance — reduce animations on touch devices              */
+/* ===================================================================== */
+@media (hover: none) and (pointer: coarse) {
+  .aurora, .aurora-deep {
+    animation: none;
+  }
+  .scan-line {
+    animation: none;
+    display: none;
+  }
+  .glass-border-glow::before {
+    animation: none;
+  }
+  .section-divider {
+    animation: none;
+  }
+  .animate-float,
+  .animate-float-subtle,
+  .animate-glow-breathe,
+  .animate-pulse-ring,
+  .animate-scale-pulse,
+  .animate-gradient-shift,
+  .animate-mood-shimmer {
+    animation: none;
+  }
+  .eq span {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ===================================================================== */
 /*  Focus ring — consistent cyan outline                                 */
 /* ===================================================================== */
 *:focus-visible {

@@ -16,7 +16,7 @@ import {
 } from "react";
 import toast from "react-hot-toast";
 import type { Song } from "@/types";
-import { getStreamUrl, incrementPlayCount, tokenStore } from "@/services/api";
+import { getStreamUrl, incrementPlayCount, getTrending, tokenStore } from "@/services/api";
 import { addLike, listLikes, removeLike } from "@/services/likesApi";
 
 interface PlayerContextValue {
@@ -122,6 +122,35 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       /* ignore */
     }
 
+    // ── Initialize queue with recently played + trending ──
+    // Use the recentlyPlayed state (already populated from localStorage)
+    // via its initialStateCapture so we don't double-read localStorage.
+    const rp = queueRef.current.length
+      ? queueRef.current.slice(0, 5)
+      : recentlyPlayed.slice(0, 5);
+
+    getTrending()
+      .then((trendingSongs) => {
+        if (cancelled) return;
+        const trendingSlice = trendingSongs.slice(0, 5);
+        const initialQueue = [...rp, ...trendingSlice];
+        if (initialQueue.length > 0) {
+          setQueue(initialQueue);
+          // Start at the first recently played track if available
+          if (rp.length > 0) {
+            setIndex(0);
+          }
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // Trending fetch failed — use just recently played
+        if (rp.length > 0) {
+          setQueue(rp);
+          setIndex(0);
+        }
+      });
+
     if (tokenStore.get()) {
       listLikes()
         .then((server) => {
@@ -152,7 +181,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audio.volume = volume;
     audioRef.current = audio;
 
-    const onTime = () => setCurrentTime(audio.currentTime);
+    // Throttle timeupdate with requestAnimationFrame to reduce re-render
+    // frequency on mobile. The audio timeupdate fires ~4 times/second but
+    // every setCurrentTime triggers a React render of BottomPlayer.
+    let rafId: number | null = null;
+    const onTime = () => {
+      if (rafId !== null) return; // already queued a frame
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        setCurrentTime(audio.currentTime);
+      });
+    };
     const onMeta = () => setDuration(audio.duration || 0);
     const onEnd = () => {
       if (repeatRef.current) {
@@ -173,6 +212,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audio.addEventListener("pause", onPause);
 
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       audio.pause();
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("loadedmetadata", onMeta);
