@@ -13,7 +13,18 @@
       "Bash(npx tsc *)",
       "Bash(npx next *)",
       "Bash(awk '/colors:/,/},/' tailwind.config.ts)",
-      "Bash(echo \"=== tsc exit: $? ===\")"
+      "Bash(echo \"=== tsc exit: $? ===\")",
+      "Bash(./.venv/bin/python -c \"import main; print\\('import OK'\\); print\\('CORS origins:', [o for o in __import__\\('main'\\).allowed_origins]\\); print\\('routes mounted:', len\\(main.app.routes\\)\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(.venv/bin/pip show *)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/python -c \"import yt_dlp; print\\(yt_dlp.version.__version__\\)\")",
+      "Bash(.venv/bin/python -c ' *)",
+      "Bash(python3 -m py_compile backend/routes/player.py)",
+      "Bash(.venv/bin/python -c \"import httpx; c=httpx.AsyncClient\\(proxy=None\\); print\\('proxy=None OK, httpx', httpx.__version__\\)\")",
+      "Bash(python3 -m py_compile backend/routes/player.py backend/main.py)"
     ]
   }
 }

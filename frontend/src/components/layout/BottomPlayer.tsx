@@ -7,6 +7,7 @@
 // ============================================================================
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Play,
@@ -58,6 +59,7 @@ export default function BottomPlayer() {
     toggleRepeat,
     addDownload,
   } = usePlayer();
+  const router = useRouter();
   const { toggleQueue, toggleNowPlaying, queueOpen, nowPlayingOpen } = useUI();
   const [downloading, setDownloading] = useState(false);
   const [seekHover, setSeekHover] = useState(false);
@@ -78,11 +80,38 @@ export default function BottomPlayer() {
       initial={{ y: 40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      drag="y"
+      dragConstraints={{ top: 0, bottom: 0 }}
+      dragElastic={0.08}
+      onDragEnd={(_, info) => {
+        if (info.offset.y < -60 || (info.offset.y < -20 && info.velocity.y < -500)) {
+          current && router.push("/now-playing");
+        }
+      }}
       className="fixed inset-x-0 bottom-16 z-40 h-24 border-t border-white/[0.08] bg-nova-bg2/70 shadow-[0_-8px_40px_rgba(0,0,0,0.5)] backdrop-blur-3xl md:bottom-0"
     >
+      {/* Drag handle — visible on mobile as swipe-up affordance */}
+      <div className="absolute inset-x-0 top-0 flex justify-center md:hidden">
+        <motion.div
+          whileTap={{ scale: 0.9 }}
+          className="mt-1.5 h-1 w-10 rounded-full bg-white/20"
+        />
+      </div>
+
       <div className="mx-auto flex h-full max-w-[1700px] items-center gap-2 px-3 sm:gap-4 sm:px-6">
         {/* ════ Track Info ════ */}
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div
+          className="flex min-w-0 flex-1 items-center gap-3"
+          onClick={() => current && router.push("/now-playing")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" || e.key === " ") && current) {
+              e.preventDefault();
+              router.push("/now-playing");
+            }
+          }}
+        >
           {current ? (
             <>
               <div className="relative flex-shrink-0">
@@ -123,7 +152,10 @@ export default function BottomPlayer() {
               </div>
               <motion.button
                 whileTap={TAP}
-                onClick={() => toggleLike(current)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleLike(current);
+                }}
                 className="ml-1 hidden text-white/45 transition-colors hover:text-nova-cyan sm:block"
                 aria-label="Like"
               >

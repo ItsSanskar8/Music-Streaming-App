@@ -4,6 +4,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { Home, Compass, TrendingUp, Heart, ListMusic } from "lucide-react";
 
 const NAV = [
@@ -17,7 +18,12 @@ const NAV = [
 export default function MobileBottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-white/[0.08] bg-nova-bg/80 backdrop-blur-2xl md:hidden">
+    <motion.nav
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-white/[0.08] bg-nova-bg/80 backdrop-blur-2xl md:hidden"
+    >
       {NAV.map(({ href, label, icon: Icon }) => {
         const active = pathname === href;
         return (
@@ -33,6 +39,6 @@ export default function MobileBottomNav() {
           </Link>
         );
       })}
-    </nav>
+    </motion.nav>
   );
 }

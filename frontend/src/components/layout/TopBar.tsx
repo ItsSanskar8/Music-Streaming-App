@@ -7,14 +7,14 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Command, Sparkles } from "lucide-react";
+import { Search, Command, Sparkles, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUI } from "@/contexts/UIContext";
 
 export default function TopBar() {
   const router = useRouter();
   const { user } = useAuth();
-  const { openCommand } = useUI();
+  const { openCommand, toggleSidebar } = useUI();
   const [q, setQ] = useState("");
   const pathname = usePathname();
   const prevPathname = useRef(pathname);
@@ -35,6 +35,16 @@ export default function TopBar() {
 
   return (
     <header className="sticky top-0 z-20 flex h-20 items-center gap-3 border-b border-white/[0.06] bg-nova-bg/50 px-5 backdrop-blur-2xl sm:px-8">
+      {/* Hamburger — visible only on mobile, toggles sidebar drawer */}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={toggleSidebar}
+        className="flex items-center justify-center text-white/50 transition-colors hover:text-white md:hidden"
+        aria-label="Open menu"
+      >
+        <Menu size={22} />
+      </motion.button>
+
       <form onSubmit={submit} className="relative w-full max-w-md">
         <Search
           size={16}
