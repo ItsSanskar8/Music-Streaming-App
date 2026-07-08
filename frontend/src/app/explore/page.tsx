@@ -38,7 +38,7 @@ export default function ExplorePage() {
           className="mb-8"
         >
           <div className="flex items-center gap-3 mb-2">
-            <TrendingUp size={24} className="text-nova-cyan" />
+            <TrendingUp size={24} className="text-nova-blue" />
             <h1 className="text-3xl font-bold tracking-tight text-white">
               Explore
             </h1>
@@ -50,7 +50,7 @@ export default function ExplorePage() {
 
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-white/50">
-            <Loader2 size={16} className="animate-spin text-nova-cyan" />
+            <Loader2 size={16} className="animate-spin text-nova-blue" />
             Loading explore…
           </div>
         ) : songs.length === 0 ? (

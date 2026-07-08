@@ -19,7 +19,7 @@ export default function Icon() {
           fontSize: 22,
           fontWeight: 800,
           color: "#050505",
-          background: "linear-gradient(135deg, #245BFF 0%, #00F5D4 100%)",
+          background: "linear-gradient(135deg, #6366F1 0%, #34D399 100%)",
           borderRadius: 8,
         }}
       >

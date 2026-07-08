@@ -65,9 +65,9 @@ export default function TrendingPage() {
           {songs.length > 0 && (
             <button
               onClick={() => playSong(songs[0], songs)}
-              className="mt-4 flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+              className="mt-4 flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03]"
             >
-              <Play size={16} className="fill-black" />
+              <Play size={16} className="fill-[#0F0F12]" />
               Play All
             </button>
           )}
@@ -83,7 +83,7 @@ export default function TrendingPage() {
             action={
               <Link
                 href="/search"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03]"
               >
                 <Music2 size={16} />
                 Search Music

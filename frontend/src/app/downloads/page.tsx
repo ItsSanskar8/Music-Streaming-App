@@ -45,9 +45,9 @@ export default function DownloadsPage() {
           {downloadedSongs.length > 0 && (
             <button
               onClick={playAll}
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+              className="flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03]"
             >
-              <Play size={16} className="fill-black" />
+              <Play size={16} className="fill-[#F5F0EB]" />
               Play All
             </button>
           )}
@@ -71,7 +71,7 @@ export default function DownloadsPage() {
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.06]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan transition-all"
+              className="h-full rounded-full bg-white transition-all"
               style={{ width: `${Math.min(downloadedSongs.length * 10, 100)}%` }}
             />
           </div>
@@ -88,7 +88,7 @@ export default function DownloadsPage() {
             action={
               <Link
                 href="/trending"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03]"
               >
                 <Music2 size={16} />
                 Explore Trending

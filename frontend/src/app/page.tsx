@@ -15,6 +15,7 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   Sparkles,
   Play,
@@ -95,12 +96,13 @@ const COLLECTIONS = [
 function Reveal({ children, delay = 0, className = "" }: {
   children: React.ReactNode; delay?: number; className?: string;
 }) {
+  const reduced = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 26 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={reduced ? false : { opacity: 0, y: 26 }}
+      whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.7, ease: EASE, delay }}
+      transition={reduced ? { duration: 0 } : { duration: 0.7, ease: EASE, delay }}
       className={className}
     >
       {children}
@@ -142,6 +144,11 @@ const NAV_LINKS = [
 
 // ── Floating glowing orbs (decorative) ──────────────────────────────────
 function FloatingOrbs() {
+  const reduced = useReducedMotion();
+
+  // On mobile these infinite framer-motion loops cause jank — skip entirely.
+  if (reduced) return null;
+
   return (
     <div className="pointer-events-none absolute inset-0 -z-5 overflow-hidden">
       {/* Orb 1 - top right */}
@@ -179,7 +186,7 @@ function FloatingOrbs() {
 function SectionDivider() {
   return (
     <div className="mx-auto max-w-7xl px-6">
-      <div className="section-divider" />
+      <div className="h-px w-full bg-white/[0.06]" />
     </div>
   );
 }
@@ -229,9 +236,9 @@ export default function LandingPage() {
           <Link href="/" className="flex items-center gap-2.5 group">
             <motion.div
               whileHover={{ scale: 1.05, rotate: -5 }}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-nova-blue to-nova-cyan shadow-glow-cyan transition-shadow group-hover:shadow-glow-blue"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-md transition-shadow group-hover:shadow-lg"
             >
-              <Sparkles size={16} className="text-black" />
+              <Sparkles size={16} className="text-[#0F0F12]" />
             </motion.div>
             <span className="text-xl font-bold tracking-tight text-white">Nova</span>
           </Link>
@@ -244,7 +251,7 @@ export default function LandingPage() {
                 className="group relative rounded-full px-4 py-2 text-sm font-medium text-white/60 transition-colors hover:text-white"
               >
                 {label}
-                <span className="absolute inset-x-4 -bottom-0.5 h-px scale-x-0 bg-gradient-to-r from-nova-blue to-nova-cyan transition-transform duration-300 group-hover:scale-x-100" />
+                <span className="absolute inset-x-4 -bottom-0.5 h-px scale-x-0 bg-nova-blue transition-transform duration-300 group-hover:scale-x-100" />
               </a>
             ))}
           </div>
@@ -255,10 +262,9 @@ export default function LandingPage() {
               className="hidden rounded-full px-4 py-2 text-sm font-medium text-white/70 transition-colors hover:text-white sm:block"
             >
               Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-5 py-2 text-sm font-semibold text-black shadow-glow-blue transition-all hover:scale-[1.04] hover:shadow-glow-cyan"
+            </Link>              <Link
+                href="/signup"
+                className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-[#0F0F12] shadow-md transition-all hover:scale-[1.04] hover:shadow-lg"
             >
               Get Started
             </Link>
@@ -271,16 +277,15 @@ export default function LandingPage() {
 
       {/* Fallback gradient blobs when 3D is disabled */}
       {!enable3D && (
-        <div className="pointer-events-none fixed inset-0 -z-10">
-          <motion.div
-            animate={{
-              scale: [1, 1.08, 1],
-              rotate: [0, 3, -2, 0],
-            }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute right-[-5%] top-1/4 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-nova-blue/30 to-nova-cyan/20 blur-[140px]"
-          />
-          <div className="absolute left-1/3 top-1/3 h-[300px] w-[300px] rounded-full bg-nova-violet/15 blur-[120px]" />
+        <div className="pointer-events-none fixed inset-0 -z-10">                  <motion.div
+                    animate={{
+                      scale: [1, 1.08, 1],
+                      rotate: [0, 3, -2, 0],
+                    }}
+                    transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute right-[-5%] top-1/4 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-nova-blue/30 to-nova-cyan/20 blur-[140px]"
+                  />
+                  <div className="absolute left-1/3 top-1/3 h-[300px] w-[300px] rounded-full bg-nova-violet/15 blur-[120px]" />
         </div>
       )}
 
@@ -301,7 +306,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6, ease: EASE }}
             >
               <span className="pill animate-gradient-shift bg-gradient-to-r from-nova-blue/15 via-nova-cyan/15 to-nova-blue/15">
-                <Sparkles size={13} className="text-nova-cyan" />
+                <Sparkles size={13} className="text-nova-blue" />
                 Next-Gen Music Streaming
               </span>
             </motion.div>
@@ -309,8 +314,7 @@ export default function LandingPage() {
             {/* Main heading — split word reveal */}
             <h1 className="mt-6 text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl">
               <AnimatedHeading text="Feel Music In" />
-              <br />
-              <span className="mt-2 inline-block text-gradient text-glow-strong">
+              <br />                <span className="mt-2 inline-block text-gradient-gold text-glow-strong">
                 <AnimatedHeading text="Another Dimension" />
               </span>
             </h1>
@@ -335,12 +339,8 @@ export default function LandingPage() {
             >
               <Link
                 href="/signup"
-                className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-7 py-3.5 text-sm font-semibold text-black shadow-glow-blue transition-all hover:scale-[1.03] hover:shadow-glow-cyan"
-              >
-                <motion.span
-                  className="absolute inset-0 -z-10 bg-gradient-to-r from-nova-cyan to-nova-blue opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                />
-                <Play size={16} className="fill-black transition-transform group-hover:scale-110" />
+                className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-all hover:scale-[1.03] hover:shadow-lg"
+              >                    <Play size={16} className="fill-[#0F0F12] transition-transform group-hover:scale-110" />
                 Start Listening
               </Link>
               <Link
@@ -394,11 +394,10 @@ export default function LandingPage() {
 
             <div className="glass-strong relative animate-float rounded-3xl p-5 shadow-glass-lg">
               {/* Now playing header */}
-              <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-nova-cyan/20">
-                  <div className="h-2 w-2 rounded-full bg-nova-cyan animate-pulse-ring-fast" />
+              <div className="mb-4 flex items-center gap-2">                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-nova-blue/20">
+                  <div className="h-2 w-2 rounded-full bg-nova-blue animate-pulse-ring-fast" />
                 </div>
-                <span className="text-xs font-semibold uppercase tracking-widest text-nova-cyan">
+                <span className="text-xs font-semibold uppercase tracking-widest text-nova-blue">
                   Now Playing
                 </span>
               </div>
@@ -416,7 +415,7 @@ export default function LandingPage() {
                   />
                   {/* Spinning disc ring on hover */}
                   <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                    <div className="animate-spin-slow h-full w-full rounded-2xl border-2 border-transparent border-t-nova-cyan/40 border-r-nova-blue/30" />
+                    <div className="animate-spin-slow h-full w-full rounded-2xl border-2 border-transparent border-t-nova-blue/40 border-r-nova-cyan/30" />
                   </div>
                 </div>
                 <div className="min-w-0 flex-1">
@@ -428,8 +427,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Seek bar */}
-              <div className="mt-5">
+              {/* Seek bar */}                  <div className="mt-5">
                 <div className="relative h-1 w-full overflow-hidden rounded-full bg-white/10">
                   <motion.div
                     animate={{ width: ["40%", "42%", "39%", "41%"] }}
@@ -450,13 +448,12 @@ export default function LandingPage() {
                 </motion.button>
                 <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                   <SkipBack size={18} className="fill-current" />
-                </motion.button>
-                <motion.div
-                  whileHover={{ scale: 1.06 }}
-                  whileTap={{ scale: 0.94 }}
-                  className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan text-black shadow-glow-cyan"
-                >
-                  <Play size={20} className="translate-x-[1px] fill-black" />
+                </motion.button>                  <motion.div
+                    whileHover={{ scale: 1.06 }}
+                    whileTap={{ scale: 0.94 }}
+                    className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#0F0F12] shadow-md"
+                  >
+                    <Play size={20} className="translate-x-[1px] fill-[#0F0F12]" />
                 </motion.div>
                 <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                   <SkipForward size={18} className="fill-current" />
@@ -492,7 +489,7 @@ export default function LandingPage() {
             <Reveal key={s.id} delay={i * 0.05}>
               <motion.div
                 whileHover={{ x: 4 }}
-                className="group flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3 backdrop-blur-xl transition-all hover:border-nova-cyan/25 hover:bg-white/[0.06] hover:shadow-glow-cyan/10"
+                className="group flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3 backdrop-blur-xl transition-all hover:border-nova-blue/25 hover:bg-white/[0.06] hover:shadow-glow-emerald/10"
               >
                 {/* Animated rank */}
                 <motion.span
@@ -518,9 +515,9 @@ export default function LandingPage() {
                 </div>
                 <motion.span
                   whileHover={{ scale: 1.08 }}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan text-black opacity-0 shadow-glow-cyan transition-all duration-300 group-hover:opacity-100"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#0F0F12] opacity-0 shadow-md transition-all duration-300 group-hover:opacity-100"
                 >
-                  <Play size={16} className="translate-x-[1px] fill-black" />
+                  <Play size={16} className="translate-x-[1px] fill-[#0F0F12]" />
                 </motion.span>
               </motion.div>
             </Reveal>
@@ -547,8 +544,8 @@ export default function LandingPage() {
               {/* Outer rotating ring */}
               <div className="animate-spin-slow relative flex h-52 w-52 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-nova-blue/20 to-nova-cyan/10 backdrop-blur-xl shadow-glass-lg">
                 {/* Inner fixed content */}
-                <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan shadow-glow-cyan">
-                  <Sparkles size={40} className="text-black" />
+                <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan shadow-glow-emerald">
+                  <Sparkles size={40} className="text-[#0F0F12]" />
                 </div>
               </div>
               {/* Orbiting particle */}
@@ -557,7 +554,7 @@ export default function LandingPage() {
                 transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                 className="absolute h-52 w-52"
               >
-                <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-nova-cyan shadow-glow-cyan" />
+                <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-nova-cyan shadow-glow-emerald" />
               </motion.div>
             </div>
           </Reveal>
@@ -565,14 +562,14 @@ export default function LandingPage() {
           <Reveal delay={0.1}>
             <div className="mb-6 flex flex-wrap gap-2">
               {MOODS.map((m) => (
-                <span key={m.label} className="pill cursor-default hover:border-nova-cyan/30 hover:text-white transition-colors">
+                <span key={m.label} className="pill cursor-default hover:border-nova-blue/30 hover:text-white transition-colors">
                   <span>{m.emoji}</span>
                   {m.label}
                 </span>
               ))}
             </div>
             <div className="glass-dynamic rounded-2xl p-5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-nova-cyan">
+              <p className="text-xs font-semibold uppercase tracking-wider text-nova-blue">
                 <Waves size={13} className="inline mr-1" />
                 Recommendation Preview
               </p>
@@ -592,7 +589,7 @@ export default function LandingPage() {
                 <motion.span
                   animate={{ scale: [1, 1.04, 1] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="rounded-full bg-nova-cyan/15 px-3 py-1 text-xs font-semibold text-nova-cyan"
+                  className="rounded-full bg-nova-blue/15 px-3 py-1 text-xs font-semibold text-nova-blue"
                 >
                   98% match
                 </motion.span>
@@ -612,10 +609,10 @@ export default function LandingPage() {
             <Reveal key={f.title} delay={i * 0.06}>
               <motion.div
                 whileHover={{ y: -4 }}
-                className="group h-full rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6 backdrop-blur-xl transition-all hover:border-nova-cyan/25 hover:shadow-glow-cyan"
+                className="group h-full rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6 backdrop-blur-xl transition-all hover:border-nova-blue/25 hover:shadow-glow-emerald"
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-nova-blue/25 to-nova-cyan/20 ring-1 ring-white/10 transition-all duration-300 group-hover:scale-110 group-hover:from-nova-blue/35 group-hover:to-nova-cyan/30">
-                  <f.icon size={22} className="text-nova-cyan" />
+                  <f.icon size={22} className="text-nova-blue" />
                 </div>
                 <h3 className="text-lg font-semibold text-white">{f.title}</h3>
                 <p className="mt-1.5 text-sm text-white/50">{f.desc}</p>
@@ -644,7 +641,7 @@ export default function LandingPage() {
                     width={96}
                     height={96}
                     unoptimized
-                    className="h-24 w-24 rounded-full object-cover ring-1 ring-white/10 transition-all duration-300 hover:ring-2 hover:ring-nova-cyan/40 hover:shadow-glow-cyan"
+                    className="h-24 w-24 rounded-full object-cover ring-1 ring-white/10 transition-all duration-300 hover:ring-2 hover:ring-nova-blue/40 hover:shadow-glow-emerald"
                   />
                   <motion.div
                     whileHover={{ opacity: 1 }}
@@ -686,13 +683,12 @@ export default function LandingPage() {
                   alt={FEATURED[2].title}
                   width={140}
                   height={140}
-                  unoptimized
-                  className="h-32 w-32 rounded-2xl object-cover shadow-glass ring-1 ring-white/10"
+                  unoptimized                    className="h-32 w-32 rounded-2xl object-cover shadow-glass ring-1 ring-white/10"
                 />
                 <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="absolute bottom-2 right-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-nova-cyan/80 shadow-lg">
-                    <Disc3 size={16} className="text-black" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-nova-blue/80 shadow-lg">
+                    <Disc3 size={16} className="text-[#0F0F12]" />
                   </div>
                 </div>
               </motion.div>
@@ -715,8 +711,7 @@ export default function LandingPage() {
                 <div className="mt-5 flex items-center justify-between">
                   <div className="flex items-center gap-4 sm:gap-5 text-white/70">
                     {[Shuffle, SkipBack, null, SkipForward, Repeat].map((Icon, i) =>
-                      Icon ? (
-                        <motion.button key={i} whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.9 }}>
+                      Icon ? (                          <motion.button key={i} whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.9 }}>
                           <Icon size={18} className={i === 0 || i === 4 ? "" : "fill-current"} />
                         </motion.button>
                       ) : (
@@ -724,16 +719,16 @@ export default function LandingPage() {
                           key={i}
                           whileHover={{ scale: 1.06 }}
                           whileTap={{ scale: 0.94 }}
-                          className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan text-black shadow-glow-cyan"
+                          className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#0F0F12] shadow-md"
                         >
-                          <Play size={20} className="translate-x-[1px] fill-black" />
+                          <Play size={20} className="translate-x-[1px] fill-[#0F0F12]" />
                         </motion.div>
                       )
                     )}
                   </div>
                   <div className="hidden items-center gap-3 text-white/60 sm:flex">
                     <motion.button whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.9 }}>
-                      <Heart size={18} className="fill-nova-cyan text-nova-cyan" />
+                      <Heart size={18} className="fill-nova-rose text-nova-rose" />
                     </motion.button>
                     <motion.button whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.9 }}>
                       <Volume2 size={18} />
@@ -756,7 +751,7 @@ export default function LandingPage() {
             <Reveal key={c.name} delay={i * 0.05}>
               <motion.div
                 whileHover={{ y: -6, scale: 1.02 }}
-                className={`group aspect-square overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br ${c.grad} p-4 shadow-glass transition-all duration-300 hover:shadow-glow-cyan`}
+                className={`group aspect-square overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br ${c.grad} p-4 shadow-glass transition-all duration-300 hover:shadow-glow-emerald`}
               >
                 <div className="flex h-full flex-col justify-between">
                   <Radio size={22} className="text-white/80 transition-transform group-hover:scale-110" />
@@ -782,10 +777,8 @@ export default function LandingPage() {
         </div>
         <Reveal className="mx-auto max-w-3xl text-center">
           <motion.div
-            whileHover={{ rotate: -5, scale: 1.05 }}
-            className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-nova-blue to-nova-cyan shadow-glow-cyan"
-          >
-            <Sparkles size={28} className="text-black" />
+            whileHover={{ rotate: -5, scale: 1.05 }}              className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-lg"
+          >              <Sparkles size={28} className="text-[#0F0F12]" />
           </motion.div>
           <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl leading-[1.1]">
             Nova Is Not Just Music.{" "}
@@ -795,13 +788,12 @@ export default function LandingPage() {
             Step into a futuristic music experience built for discovery, mood,
             playlists, and sound.
           </p>
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/signup"
-              className="rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-8 py-3.5 text-sm font-semibold text-black shadow-glow-blue transition-all hover:scale-[1.03] hover:shadow-glow-cyan"
-            >
-              Enter Nova
-            </Link>
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">              <Link
+                href="/signup"
+                className="rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-all hover:scale-[1.03] hover:shadow-lg"
+              >
+                Enter Nova
+              </Link>
             <Link
               href="/signup"
               className="rounded-full border border-white/15 bg-white/[0.04] px-8 py-3.5 text-sm font-semibold text-white backdrop-blur-xl transition-all hover:border-white/30 hover:bg-white/[0.08]"
@@ -818,9 +810,9 @@ export default function LandingPage() {
           <div className="flex items-center gap-2.5 group">
             <motion.div
               whileHover={{ scale: 1.05, rotate: -5 }}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-nova-blue to-nova-cyan"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white"
             >
-              <Sparkles size={14} className="text-black" />
+              <Sparkles size={14} className="text-[#0F0F12]" />
             </motion.div>
             <span className="font-bold text-white">Nova</span>
           </div>
@@ -853,10 +845,9 @@ function ShowcaseCard({ id, title, artist, tag, index = 0 }: {
   id: string; title: string; artist: string; tag?: string; index?: number;
 }) {
   return (
-    <Reveal delay={index * 0.05}>
-      <motion.div
-        whileHover={{ y: -6, scale: 1.01 }}
-        className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3 backdrop-blur-xl transition-all hover:border-nova-cyan/20 hover:shadow-glow-cyan"
+    <Reveal delay={index * 0.05}>              <motion.div
+                whileHover={{ y: -6, scale: 1.01 }}
+                className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3 backdrop-blur-xl transition-all hover:border-nova-blue/20 hover:shadow-glow-emerald"
       >
         <div className="relative aspect-square overflow-hidden rounded-xl bg-white/5">
           <Image
@@ -869,15 +860,13 @@ function ShowcaseCard({ id, title, artist, tag, index = 0 }: {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           {tag && (
-            <span className="absolute left-2 top-2 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-nova-cyan backdrop-blur-md">
+            <span className="absolute left-2 top-2 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-nova-blue backdrop-blur-md">
               {tag}
             </span>
-          )}
-          <motion.span
-            whileHover={{ scale: 1.06 }}
-            className="absolute bottom-2 right-2 flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan text-black opacity-0 shadow-glow-cyan transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
-          >
-            <Play size={16} className="translate-x-[1px] fill-black" />
+          )}              <motion.span
+              whileHover={{ scale: 1.06 }}                            className="absolute bottom-2 right-2 flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-white text-[#0F0F12] opacity-0 shadow-md transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
+            >
+              <Play size={16} className="translate-x-[1px] fill-[#0F0F12]" />
           </motion.span>
         </div>
         <div className="mt-3 px-1">

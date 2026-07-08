@@ -92,16 +92,16 @@ export default function FileDropzone() {
       onDragLeave={handleDragLeave}
       className={`relative overflow-hidden rounded-3xl border-2 border-dashed p-12 text-center transition-all ${
         isDragging
-          ? "border-brand-cyan/60 bg-brand-cyan/10"
-          : "border-white/[0.12] bg-white/[0.03] hover:border-brand-lavender/40 hover:bg-white/[0.05]"
+          ? "border-nova-cyan/60 bg-nova-cyan/10"
+          : "border-white/[0.12] bg-white/[0.03] hover:border-nova-blue/40 hover:bg-white/[0.05]"
       }`}
     >
       <div className="relative z-10">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03]">
           {isDragging ? (
-            <Upload size={28} className="text-brand-cyan" />
+            <Upload size={28} className="text-nova-cyan" />
           ) : (
-            <Music size={28} className="text-brand-lavender" />
+            <Music size={28} className="text-nova-blue" />
           )}
         </div>
 
@@ -112,7 +112,7 @@ export default function FileDropzone() {
           Drag & drop MP3 files or click to browse
         </p>
 
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-brand-lavender/30 bg-brand-lavender/10 px-6 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-105">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-nova-blue/30 bg-nova-blue/10 px-6 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-105">
           <File size={16} />
           Choose Files
           <input
@@ -130,7 +130,7 @@ export default function FileDropzone() {
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="pointer-events-none absolute inset-0 bg-gradient-radial from-brand-cyan/20 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-radial from-nova-cyan/20 to-transparent"
         />
       )}
     </motion.div>

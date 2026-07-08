@@ -96,7 +96,7 @@ function SearchInner() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="What do you want to listen to?"
-              className="w-full rounded-2xl border border-white/10 bg-white/[0.04] py-4 pl-12 pr-5 text-sm font-medium text-white placeholder:text-white/40 outline-none transition-all focus:border-nova-cyan/40 focus:shadow-glow-cyan focus:bg-white/[0.06]"
+              className="w-full rounded-2xl border border-white/[0.06] bg-white/[0.03] py-4 pl-12 pr-5 text-sm font-medium text-white placeholder:text-white/35 outline-none transition-all focus:border-white/[0.12] focus:bg-white/[0.05]"
             />
           </div>
         </motion.div>

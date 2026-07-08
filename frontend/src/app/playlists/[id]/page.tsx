@@ -75,7 +75,7 @@ export default function PlaylistDetailPage() {
             title="Playlist not found"
             subtitle="This playlist may have been deleted."
             action={
-              <Link href="/playlists" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue">
+              <Link href="/playlists" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md">
                 <ArrowLeft size={16} />
                 Back to Playlists
               </Link>
@@ -119,9 +119,9 @@ export default function PlaylistDetailPage() {
                 <button
                   onClick={playAll}
                   disabled={playlist.songs.length === 0}
-                  className="flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03] disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03] disabled:opacity-50"
                 >
-                  <Play size={16} className="fill-black" />
+                  <Play size={16} className="fill-[#F5F0EB]" />
                   Play All
                 </button>
                 <button
@@ -149,7 +149,7 @@ export default function PlaylistDetailPage() {
                 title="No songs in this playlist"
                 subtitle="Add songs from Search, Trending, or the player."
                 action={
-                  <Link href="/search" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue">
+                  <Link href="/search" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md">
                     <Music2 size={16} />
                     Find Songs
                   </Link>

@@ -32,7 +32,7 @@ export default function MusicCard({ song, list, index = 0 }: Props) {
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.45, delay: Math.min(index * 0.05, 0.5), ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -7, scale: 1.01 }}
-      className={`group relative w-full overflow-hidden rounded-2xl border bg-white/[0.03] p-3 backdrop-blur-xl transition-all duration-300 hover:shadow-glow-cyan ${
+      className={`group relative w-full overflow-hidden rounded-2xl border bg-white/[0.03] p-3 backdrop-blur-xl transition-all duration-300 hover:shadow-glow-emerald ${
         isCurrent ? "border-nova-cyan/30" : "border-white/[0.07]"
       }`}
     >

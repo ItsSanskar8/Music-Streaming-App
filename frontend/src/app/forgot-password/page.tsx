@@ -47,8 +47,8 @@ export default function ForgotPasswordPage() {
       >
         <div className="mb-8 flex justify-center">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-nova-blue to-nova-cyan shadow-glow-cyan">
-              <Sparkles size={20} className="text-black" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-md">
+              <Sparkles size={20} className="text-[#0F0F12]" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-white">Nova</span>
           </Link>
@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
 
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04] border border-white/[0.08]">
-            <Mail size={24} className="text-nova-cyan" />
+            <Mail size={24} className="text-white/40" />
           </div>
           <h1 className="mb-2 text-2xl font-bold tracking-tight text-white">
             Forgot your password?
@@ -72,8 +72,8 @@ export default function ForgotPasswordPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="glass rounded-2xl p-6 text-center"
           >
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-nova-cyan/15">
-              <Mail size={20} className="text-nova-cyan" />
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/[0.04]">
+              <Mail size={20} className="text-white/40" />
             </div>
             <p className="text-sm font-medium text-white">
               Check your email for the reset link.
@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
             {resetToken && (
               <Link
                 href={`/reset-password?token=${encodeURIComponent(resetToken)}`}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03]"
               >
                 Reset Password Now
               </Link>
@@ -98,12 +98,12 @@ export default function ForgotPasswordPage() {
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm font-medium text-white placeholder:text-white/40 outline-none transition-all focus:border-nova-cyan/40 focus:shadow-glow-cyan focus:bg-white/[0.06]"
+              className="w-full rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5 text-sm font-medium text-white placeholder:text-white/35 outline-none transition-all focus:border-white/[0.12] focus:bg-white/[0.05]"
             />
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-nova-blue to-nova-cyan py-3.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.01] disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.01] disabled:opacity-60"
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : null}
               {loading ? "Sending…" : "Send Reset Link"}
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <div className="mt-6 text-center">
-          <Link href="/login" className="inline-flex items-center gap-1.5 text-sm font-medium text-white/40 transition-colors hover:text-nova-cyan">
+          <Link href="/login" className="inline-flex items-center gap-1.5 text-sm font-medium text-white/35 transition-colors hover:text-white/60">
             <ArrowLeft size={14} />
             Back to Sign In
           </Link>

@@ -1,7 +1,7 @@
 "use client";
 
-// Slide-up Queue drawer, triggered from the Bottom Player. Lists the queue
-// with Play / Remove per row, a Clear Queue action, and an empty state.
+// Slide-up Queue drawer — refined v5. Cleaner glass surfaces, muted colors,
+// better spacing, refined active states.
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Play, Trash2, ListX, Volume2 } from "lucide-react";
@@ -32,31 +32,31 @@ export default function QueueDrawer() {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 260 }}
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] rounded-t-3xl border-t border-white/[0.1] bg-brand-navy/80 backdrop-blur-2xl"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] rounded-t-3xl border-t border-white/[0.06] bg-[#0F0F12]/85 backdrop-blur-2xl"
           >
             <div className="mx-auto max-w-3xl px-5 py-5 sm:px-8">
               {/* Grab handle */}
-              <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-white/15" />
+              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/12" />
 
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="text-base font-semibold text-white">
                   Queue{" "}
-                  <span className="text-sm font-normal text-white/40">
+                  <span className="text-sm font-normal text-white/35">
                     · {queue.length}
                   </span>
                 </h3>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   {queue.length > 0 && (
                     <button
                       onClick={clearQueue}
-                      className="flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-white/60 transition-colors hover:text-brand-rose"
+                      className="flex items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-white/45 transition-colors hover:text-nova-rose"
                     >
-                      <ListX size={14} /> Clear
+                      <ListX size={13} /> Clear
                     </button>
                   )}
                   <button
                     onClick={() => setQueue(false)}
-                    className="text-white/40 transition-colors hover:text-white"
+                    className="text-white/35 transition-colors hover:text-white"
                     aria-label="Close"
                   >
                     <X size={18} />
@@ -64,7 +64,7 @@ export default function QueueDrawer() {
                 </div>
               </div>
 
-              <div className="max-h-[46vh] space-y-1 overflow-y-auto no-scrollbar pb-2">
+              <div className="max-h-[46vh] space-y-0.5 overflow-y-auto no-scrollbar pb-2">
                 {queue.length === 0 ? (
                   <EmptyState
                     icon={ListX}
@@ -81,9 +81,9 @@ export default function QueueDrawer() {
                           active ? "bg-white/[0.05]" : ""
                         }`}
                       >
-                        <span className="w-5 text-center text-xs text-white/30">
+                        <span className="w-5 text-center text-[11px] text-white/25">
                           {active ? (
-                            <Volume2 size={14} className="text-brand-cyan" />
+                            <Volume2 size={13} className="text-nova-blue" />
                           ) : (
                             i + 1
                           )}
@@ -92,36 +92,36 @@ export default function QueueDrawer() {
                         <img
                           src={s.thumbnail || ""}
                           alt=""
-                          className="ml-3 h-10 w-10 rounded-lg object-cover ring-1 ring-white/10"
+                          className="ml-3 h-10 w-10 rounded-lg object-cover ring-1 ring-white/[0.06]"
                         />
                         <div className="ml-3 min-w-0 flex-1">
                           <p
-                            className={`truncate text-sm font-medium ${
-                              active ? "text-brand-cyan" : "text-white"
+                            className={`truncate text-[13px] font-medium ${
+                              active ? "text-nova-blue" : "text-white/80"
                             }`}
                           >
                             {s.title}
                           </p>
-                          <p className="truncate text-xs text-white/40">
+                          <p className="truncate text-[11px] text-white/35">
                             {s.artist}
                           </p>
                         </div>
                         <span className="ml-1 flex h-7 w-7 items-center justify-center">
                           <button
                             onClick={() => playFromQueue(s.yt_id)}
-                            className="rounded-full text-white/50 transition-colors hover:text-white"
+                            className="rounded-full text-white/40 transition-colors hover:text-white/70"
                             aria-label="Play"
                           >
-                            <Play size={15} className="fill-current" />
+                            <Play size={14} className="fill-current" />
                           </button>
                         </span>
                         <span className="ml-1 flex h-7 w-7 items-center justify-center">
                           <button
                             onClick={() => removeFromQueue(s.yt_id)}
-                            className="rounded-full text-white/40 opacity-0 transition-all hover:text-brand-rose group-hover:opacity-100"
+                            className="rounded-full text-white/30 opacity-0 transition-all hover:text-nova-rose group-hover:opacity-100"
                             aria-label="Remove"
                           >
-                            <Trash2 size={15} />
+                            <Trash2 size={14} />
                           </button>
                         </span>
                       </div>

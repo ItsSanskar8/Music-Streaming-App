@@ -80,14 +80,14 @@ function MoodMatchInner() {
           className="mb-8"
         >
           <div className="flex items-center gap-4 mb-2">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-nova-blue/30 to-nova-cyan/20 border border-white/[0.08]">
-              <Sparkles size={28} className="text-nova-cyan" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-nova-blue/30 to-nova-cyan/20 border border-white/[0.06]">
+              <Sparkles size={28} className="text-white/40" />
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
                 Mood Match
               </h1>
-              <p className="text-sm text-white/50">
+              <p className="text-sm text-white/40">
                 Pick a feeling — Nova scores the soundtrack
               </p>
             </div>
@@ -108,8 +108,8 @@ function MoodMatchInner() {
                 onClick={() => setSelected(m.key)}
                 className={`relative flex items-center gap-2 overflow-hidden rounded-full border px-5 py-2.5 text-sm font-medium transition-all ${
                   isActive
-                    ? "border-nova-cyan/60 bg-nova-cyan/15 text-white shadow-glow-cyan"
-                    : "border-white/10 bg-white/[0.04] text-white/60 hover:text-white hover:border-white/20"
+                    ? "border-white/[0.15] bg-white/[0.06] text-white shadow-md"
+                    : "border-white/[0.06] bg-white/[0.03] text-white/45 hover:text-white hover:border-white/[0.12]"
                 }`}
               >
                 {isActive && (
@@ -182,15 +182,15 @@ function MoodMatchInner() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.25, ease: EASE }}
-                    className="text-sm text-white/50"
+                    className="text-sm text-white/40"
                   >
                     {songs.length} track{songs.length !== 1 ? "s" : ""} recommended for{" "}
-                    <span className="font-medium text-nova-cyan">{activeMood?.label}</span>
+                    <span className="font-medium text-white/70">{activeMood?.label}</span>
                   </motion.p>
                 </AnimatePresence>
                 <button
                   onClick={() => songs.length > 0 && playSong(songs[0], songs)}
-                  className="flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-5 py-2 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+                  className="flex items-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03]"
                 >
                   Play All
                 </button>
@@ -219,7 +219,7 @@ export default function MoodMatchPage() {
   return (
     <Suspense fallback={
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-nova-cyan border-t-transparent rounded-full" />
+        <div className="animate-spin h-8 w-8 border-2 border-white/30 border-t-transparent rounded-full" />
       </div>
     }>
       <MoodMatchInner />

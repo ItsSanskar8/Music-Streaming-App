@@ -60,8 +60,8 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="mb-8 flex justify-center">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-nova-blue to-nova-cyan shadow-glow-cyan">
-              <Sparkles size={20} className="text-black" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-md">
+              <Sparkles size={20} className="text-[#0F0F12]" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-white">Nova</span>
           </Link>
@@ -70,7 +70,7 @@ export default function LoginPage() {
         <h1 className="mb-2 text-center text-3xl font-bold tracking-tight text-white">
           Welcome back
         </h1>
-        <p className="mb-8 text-center text-sm font-medium text-white/50">
+        <p className="mb-8 text-center text-sm text-white/40">
           Sign in to continue to Nova.
         </p>
 
@@ -81,7 +81,7 @@ export default function LoginPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm font-medium text-white placeholder:text-white/40 outline-none transition-all focus:border-nova-cyan/40 focus:shadow-glow-cyan focus:bg-white/[0.06]"
+            className="w-full rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5 text-sm font-medium text-white placeholder:text-white/35 outline-none transition-all focus:border-white/[0.12] focus:bg-white/[0.05]"
           />
           <input
             type="password"
@@ -89,7 +89,7 @@ export default function LoginPage() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm font-medium text-white placeholder:text-white/40 outline-none transition-all focus:border-nova-cyan/40 focus:shadow-glow-cyan focus:bg-white/[0.06]"
+            className="w-full rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5 text-sm font-medium text-white placeholder:text-white/35 outline-none transition-all focus:border-white/[0.12] focus:bg-white/[0.05]"
           />
 
           {error && (
@@ -105,7 +105,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-nova-blue to-nova-cyan py-3.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.01] disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.01] disabled:opacity-60"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : null}
             {loading ? "Signing in…" : "Sign In"}
@@ -113,7 +113,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-5 text-center">
-          <Link href="/forgot-password" className="text-sm font-medium text-white/40 transition-colors hover:text-nova-cyan">
+          <Link href="/forgot-password" className="text-sm font-medium text-white/35 transition-colors hover:text-white/60">
             Forgot your password?
           </Link>
         </div>
@@ -121,7 +121,7 @@ export default function LoginPage() {
         <div className="mt-6 border-t border-white/[0.06] pt-6 text-center">
           <p className="text-sm text-white/40">
             New to Nova?{" "}
-            <Link href="/signup" className="font-medium text-nova-cyan transition-colors hover:text-white">
+            <Link href="/signup" className="font-medium text-white/60 transition-colors hover:text-white">
               Create an account
             </Link>
           </p>

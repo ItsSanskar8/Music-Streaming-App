@@ -80,7 +80,7 @@ export default function PlaylistsPage() {
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-5 py-2.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+            className="flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03]"
           >
             <Plus size={16} />
             New Playlist
@@ -111,7 +111,7 @@ export default function PlaylistsPage() {
               <button
                 type="submit"
                 disabled={creating || !newName.trim()}
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-nova-blue to-nova-cyan px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-50"
               >
                 {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 Create
@@ -133,7 +133,7 @@ export default function PlaylistsPage() {
             action={
               <button
                 onClick={() => setShowCreate(true)}
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03]"
               >
                 <Plus size={16} />
                 Create Playlist

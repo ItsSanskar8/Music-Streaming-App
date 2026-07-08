@@ -77,7 +77,7 @@ export default function PremiumPage() {
             href="/dashboard"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-violet via-nova-blue to-nova-cyan px-8 py-3 text-sm font-semibold text-black shadow-glow-violet transition-transform hover:scale-[1.03]"
           >
-            <Sparkles size={16} className="fill-black" />
+            <Sparkles size={16} className="fill-[#F5F0EB]" />
             Start listening
           </Link>
         </motion.div>
@@ -95,7 +95,7 @@ export default function PremiumPage() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: EASE, delay: 0.2 + i * 0.05 }}
-              className="group relative flex items-start gap-4 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5 backdrop-blur-xl transition-all duration-300 hover:border-nova-cyan/25 hover:shadow-glow-cyan"
+              className="group relative flex items-start gap-4 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5 backdrop-blur-xl transition-all duration-300 hover:border-nova-cyan/25 hover:shadow-glow-emerald"
             >
               <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-nova-blue/25 to-nova-cyan/10 border border-white/[0.08]">
                 <Icon size={20} className="text-nova-cyan" />

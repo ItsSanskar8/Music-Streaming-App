@@ -25,6 +25,7 @@ import AmbientEffects from "@/components/ui/AmbientEffects";
 import MoodRadial from "@/components/ui/MoodRadial";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { getTrending, recommendByMood } from "@/services/api";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { Song } from "@/types";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -33,12 +34,13 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 function StaggerSection({ children, className = "" }: {
   children: React.ReactNode; className?: string;
 }) {
+  const reduced = useReducedMotion();
   return (
     <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={reduced ? false : { opacity: 0, y: 20 }}
+      whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.5, ease: EASE }}
+      transition={reduced ? { duration: 0 } : { duration: 0.5, ease: EASE }}
       className={className}
     >
       {children}
@@ -95,7 +97,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: EASE }}
-            className="relative mb-12 overflow-hidden rounded-[2rem] border border-white/[0.08] bg-gradient-to-br from-nova-bg2/80 to-nova-bg/80 shadow-glass-lg backdrop-blur-2xl"
+            className="relative mb-12 overflow-hidden rounded-[2rem] border border-white/[0.06] bg-gradient-to-br from-nova-bg2/60 to-nova-bg/60 shadow-glass-lg backdrop-blur-2xl"
           >
             {/* Blurred background */}
             <div className="absolute inset-0 opacity-25">
@@ -125,9 +127,9 @@ export default function DashboardPage() {
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-nova-cyan shadow-glow-cyan"
+                    className="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md"
                   >
-                    <Disc3 size={16} className="text-black animate-spin-slow" />
+                    <Disc3 size={16} className="text-[#0F0F12] animate-spin-slow" />
                   </motion.div>
                 )}
               </div>
@@ -140,8 +142,8 @@ export default function DashboardPage() {
                   transition={{ duration: 0.5, ease: EASE, delay: 0.2 }}
                   className="mb-4 flex items-center gap-2"
                 >
-                  <Sparkles size={16} className="text-nova-cyan" />
-                  <span className="text-xs font-semibold uppercase tracking-widest text-nova-cyan">
+                  <Sparkles size={16} className="text-white/40" />
+                  <span className="text-xs font-semibold uppercase tracking-widest text-white/40">
                     Featured Today
                   </span>
                 </motion.div>
@@ -149,7 +151,7 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, ease: EASE, delay: 0.25 }}
-                  className="mb-3 text-4xl font-bold tracking-tight text-white sm:text-5xl"
+                  className="mb-3 text-4xl font-bold tracking-tight text-white sm:text-[2.75rem]"
                 >
                   {featured.title}
                 </motion.h1>
@@ -157,7 +159,7 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
-                  className="mb-4 text-xl font-medium text-white/60"
+                  className="mb-4 text-xl font-medium text-white/50"
                 >
                   {featured.artist}
                 </motion.p>
@@ -168,7 +170,7 @@ export default function DashboardPage() {
                   transition={{ duration: 0.5, ease: EASE, delay: 0.35 }}
                   className="mb-6 flex items-center gap-4"
                 >
-                  <span className="rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium capitalize text-white/80 backdrop-blur-xl">
+                  <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 text-sm font-medium capitalize text-white/60 backdrop-blur-xl">
                     {featured.mood}
                   </span>
                   <AnimatedWaveform
@@ -186,14 +188,14 @@ export default function DashboardPage() {
                 >
                   <button
                     onClick={() => playSong(featured, trending)}
-                    className="flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-8 py-3.5 text-base font-semibold text-black shadow-glow-blue transition-all hover:scale-105 hover:shadow-glow-cyan"
+                    className="flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-base font-semibold text-[#0F0F12] shadow-md transition-all hover:scale-105 hover:shadow-lg"
                   >
-                    <Play size={18} className="fill-black" />
+                    <Play size={18} className="fill-[#0F0F12]" />
                     Play Now
                   </button>
                   <button
                     onClick={() => addToQueue(featured)}
-                    className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-8 py-3.5 text-base font-semibold text-white backdrop-blur-xl transition-all hover:bg-white/20 hover:border-white/30"
+                    className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-8 py-3.5 text-base font-semibold text-white/70 backdrop-blur-xl transition-all hover:bg-white/[0.08] hover:border-white/[0.12]"
                   >
                     <Plus size={18} />
                     Add to Library

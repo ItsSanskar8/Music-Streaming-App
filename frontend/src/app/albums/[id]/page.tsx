@@ -55,7 +55,7 @@ export default function AlbumDetailPage() {
             title="Album not found"
             subtitle="We couldn't find this album in the Nova catalog."
             action={
-              <Link href="/search" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue">
+              <Link href="/search" className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md">
                 <ArrowLeft size={16} />
                 Back to Search
               </Link>
@@ -94,9 +94,9 @@ export default function AlbumDetailPage() {
                 <div className="mt-4 flex items-center justify-center gap-3 sm:justify-start">
                   <button
                     onClick={() => playSong(songs[0], songs)}
-                    className="flex items-center gap-2 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-6 py-2.5 text-sm font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+                    className="flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#0F0F12] shadow-md transition-transform hover:scale-[1.03]"
                   >
-                    <Play size={16} className="fill-black" />
+                    <Play size={16} className="fill-[#F5F0EB]" />
                     Play All
                   </button>
                   <button

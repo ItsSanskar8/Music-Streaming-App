@@ -34,7 +34,7 @@ export default function PlaylistCard({
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.45, delay: Math.min(index * 0.05, 0.5) }}
       whileHover={{ y: -6 }}
-      className="group w-full cursor-pointer overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3 backdrop-blur-xl transition-shadow hover:shadow-glow-blue"
+      className="group w-full cursor-pointer overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3 backdrop-blur-xl transition-shadow hover:shadow-glow-indigo"
     >
       <div className={`relative aspect-square w-full overflow-hidden rounded-xl bg-gradient-to-br ${gradient}`}>
         {cover ? (

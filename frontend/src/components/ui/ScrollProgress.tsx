@@ -76,7 +76,7 @@ export default function ScrollProgress({ sections, className = "" }: Props) {
 
         {/* Filled track — animated with spring */}
         <motion.div
-          className="absolute top-0 left-1/2 w-[2px] -translate-x-1/2 origin-top bg-gradient-to-b from-nova-blue via-nova-cyan to-nova-violet shadow-glow-cyan/30"
+          className="absolute top-0 left-1/2 w-[2px] -translate-x-1/2 origin-top bg-gradient-to-b from-nova-blue via-nova-cyan to-nova-violet shadow-glow-emerald/30"
           style={{ scaleY: smoothProgress, height: "100%" }}
         />
 

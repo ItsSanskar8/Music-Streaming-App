@@ -27,11 +27,11 @@ export default function MusicSphere() {
       <mesh ref={sphere}>
         <icosahedronGeometry args={[1.35, 24]} />
         <MeshDistortMaterial
-          color="#245BFF"
-          emissive="#00F5D4"
-          emissiveIntensity={0.35}
-          roughness={0.15}
-          metalness={0.6}
+          color="#C9A96E"
+          emissive="#5A9E8F"
+          emissiveIntensity={0.30}
+          roughness={0.18}
+          metalness={0.55}
           distort={0.38}
           speed={1.6}
         />
@@ -42,18 +42,18 @@ export default function MusicSphere() {
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[2.1, 0.018, 16, 120]} />
           <meshStandardMaterial
-            color="#00F5D4"
-            emissive="#00F5D4"
-            emissiveIntensity={0.8}
+            color="#5A9E8F"
+            emissive="#5A9E8F"
+            emissiveIntensity={0.70}
             toneMapped={false}
           />
         </mesh>
         <mesh rotation={[Math.PI / 2.6, Math.PI / 5, 0]}>
           <torusGeometry args={[2.55, 0.012, 16, 120]} />
           <meshStandardMaterial
-            color="#245BFF"
-            emissive="#245BFF"
-            emissiveIntensity={0.7}
+            color="#C9A96E"
+            emissive="#C9A96E"
+            emissiveIntensity={0.60}
             toneMapped={false}
           />
         </mesh>

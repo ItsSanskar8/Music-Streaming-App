@@ -25,7 +25,7 @@ export default function EmptyState({
       transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
       className="flex flex-col items-center justify-center rounded-3xl border border-white/[0.06] bg-white/[0.02] px-6 py-16 text-center"
     >
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-brand-lavender">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-nova-blue">
         <Icon size={26} />
       </div>
       <h3 className="text-base font-semibold text-white">{title}</h3>

@@ -36,7 +36,7 @@ export default function ProfilePage() {
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <div className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-nova-cyan text-black shadow-glow-cyan">
+                  <div className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-nova-cyan text-black shadow-glow-emerald">
                     <User size={14} />
                   </div>
                 </div>

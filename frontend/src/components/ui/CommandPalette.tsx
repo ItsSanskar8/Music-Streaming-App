@@ -71,7 +71,7 @@ export default function CommandPalette() {
             transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             className="fixed left-1/2 top-[10vh] z-[101] w-full max-w-2xl -translate-x-1/2"
           >
-            <div className="mx-4 overflow-hidden rounded-3xl border border-white/[0.12] bg-brand-navy/95 shadow-2xl backdrop-blur-3xl">
+            <div className="mx-4 overflow-hidden rounded-3xl border border-white/[0.06] bg-[#0F0F12]/95 shadow-2xl backdrop-blur-3xl">
               {/* Search input */}
               <div className="relative border-b border-white/[0.08] p-4">
                 <Search
@@ -129,31 +129,31 @@ export default function CommandPalette() {
                           <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                             <button
                               onClick={() => handleLike(s)}
-                              className="rounded-full p-2 text-white/50 transition-colors hover:text-brand-rose"
+                              className="rounded-full p-2 text-white/50 transition-colors hover:text-nova-rose"
                               aria-label="Like"
                             >
                               <Heart
                                 size={16}
                                 className={
                                   liked
-                                    ? "fill-brand-rose text-brand-rose"
+                                    ? "fill-nova-rose text-nova-rose"
                                     : ""
                                 }
                               />
                             </button>
                             <button
                               onClick={() => handleQueue(s)}
-                              className="rounded-full p-2 text-white/50 transition-colors hover:text-brand-cyan"
+                              className="rounded-full p-2 text-white/50 transition-colors hover:text-nova-cyan"
                               aria-label="Add to queue"
                             >
                               <Plus size={16} />
                             </button>
                             <button
                               onClick={() => handlePlay(s)}
-                              className="rounded-full bg-brand-lavender p-2 text-black transition-transform hover:scale-105"
+                              className="rounded-full bg-white p-2 text-[#0F0F12] transition-transform hover:scale-105 shadow-md"
                               aria-label="Play"
                             >
-                              <Play size={16} className="fill-black" />
+                              <Play size={16} className="fill-[#F5F0EB]" />
                             </button>
                           </div>
                         </motion.div>

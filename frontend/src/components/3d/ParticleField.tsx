@@ -14,9 +14,9 @@ import type { Mesh, Points } from "three";
 
 // ── Neon palette ────────────────────────────────────────────────────────
 const NEON_RGB = [
-  [1.0, 0.08, 0.58], [0.14, 0.36, 1.0], [0.0, 0.96, 0.83],
-  [0.49, 0.36, 1.0], [1.0, 0.0, 1.0],   [0.22, 1.0, 0.08],
-  [1.0, 0.27, 0.0],
+  [0.79, 0.66, 0.43], [0.35, 0.62, 0.56], [0.61, 0.56, 0.77],
+  [0.83, 0.46, 0.54], [0.50, 0.75, 0.65], [0.70, 0.60, 0.40],
+  [0.55, 0.70, 0.55],
 ] as const;
 
 function neonColor(i: number): [number, number, number] {
@@ -132,9 +132,9 @@ export default function ParticleField({ count = 500 }: Props) {
       <mesh ref={orb1}>
         <sphereGeometry args={[3.5, 20, 16]} />
         <meshBasicMaterial
-          color="#FF1493"
+          color="#C9A96E"
           transparent
-          opacity={0.06}
+          opacity={0.05}
           blending={2}
           depthWrite={false}
         />
@@ -142,9 +142,9 @@ export default function ParticleField({ count = 500 }: Props) {
       <mesh ref={orb2}>
         <sphereGeometry args={[4, 20, 16]} />
         <meshBasicMaterial
-          color="#245BFF"
+          color="#5A9E8F"
           transparent
-          opacity={0.05}
+          opacity={0.04}
           blending={2}
           depthWrite={false}
         />

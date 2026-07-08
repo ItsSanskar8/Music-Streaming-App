@@ -23,13 +23,13 @@ export default function ThreeHeroScene() {
       style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}
     >
       <Suspense fallback={null}>
-        {/* Haze / fog for club atmosphere */}
-        <fogExp2 attach="fog" args={["#050510", 0.035]} />
-        <ambientLight intensity={0.08} />
-        <pointLight position={[12, 10, 8]} intensity={100} color="#FF1493" />
-        <pointLight position={[-12, -8, 10]} intensity={80} color="#245BFF" />
-        <pointLight position={[8, -10, -6]} intensity={60} color="#00F5D4" />
-        <pointLight position={[-9, 11, -8]} intensity={50} color="#7C5CFF" />
+        {/* Haze / fog — warm charcoal atmosphere */}
+        <fogExp2 attach="fog" args={["#0F0F12", 0.035]} />
+        <ambientLight intensity={0.06} />
+        <pointLight position={[12, 10, 8]} intensity={90} color="#C9A96E" />
+        <pointLight position={[-12, -8, 10]} intensity={70} color="#9B8EC4" />
+        <pointLight position={[8, -10, -6]} intensity={55} color="#5A9E8F" />
+        <pointLight position={[-9, 11, -8]} intensity={45} color="#D4768A" />
         <ParticleField count={600} />
       </Suspense>
     </Canvas>

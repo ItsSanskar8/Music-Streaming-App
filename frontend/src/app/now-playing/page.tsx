@@ -55,11 +55,11 @@ export default function NowPlayingPage() {
     return (
       <AuthGuard>
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/[0.08] bg-white/[0.04]">
-            <Music2 size={36} className="text-white/30" />
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/[0.06] bg-white/[0.03]">
+            <Music2 size={36} className="text-white/20" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">Nothing Playing</h1>
-          <p className="mt-2 text-sm text-white/50">
+          <p className="mt-2 text-sm text-white/40">
             Pick a song from Trending, Search, or your library to start listening.
           </p>
         </div>
@@ -97,7 +97,7 @@ export default function NowPlayingPage() {
               <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
                 {current.title}
               </h1>
-              <p className="mt-1 text-base text-white/50">{current.artist}</p>
+              <p className="mt-1 text-base text-white/45">{current.artist}</p>
               <div className="mt-3 flex items-center justify-center gap-4">
                 <LikeButton song={current} size={20} />
                 <AnimatedWaveform bars={8} heightClass="h-6" />
@@ -106,15 +106,15 @@ export default function NowPlayingPage() {
 
             {/* Progress bar */}
             <div className="mb-6">
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+              <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan transition-all duration-200"
                   style={{ width: `${progress}%` }}
                 />
               </div>
               <div className="mt-2 flex items-center justify-between text-xs tabular-nums text-white/40">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(duration)}</span>
+                <span className="text-[11px]">{formatTime(currentTime)}</span>
+                <span className="text-[11px]">{formatTime(duration)}</span>
               </div>
             </div>
 
@@ -122,39 +122,39 @@ export default function NowPlayingPage() {
             <div className="flex items-center justify-center gap-6">
               <button
                 onClick={toggleShuffle}
-                className={`transition-colors ${shuffle ? "text-nova-cyan" : "text-white/45 hover:text-white"}`}
+                className={`transition-colors ${shuffle ? "text-nova-blue" : "text-white/35 hover:text-white/70"}`}
                 aria-label="Shuffle"
               >
                 <Shuffle size={20} />
               </button>
               <button
                 onClick={prev}
-                className="text-white/70 transition-colors hover:text-white"
+                className="text-white/60 transition-colors hover:text-white"
                 aria-label="Previous"
               >
                 <SkipBack size={24} className="fill-current" />
               </button>
               <button
                 onClick={togglePlay}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan text-black shadow-glow-cyan transition-transform hover:scale-105"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#0F0F12] shadow-lg transition-all hover:scale-105 hover:shadow-xl"
                 aria-label={isPlaying ? "Pause" : "Play"}
               >
                 {isPlaying ? (
-                  <Pause size={28} className="fill-black" />
+                  <Pause size={28} className="fill-[#0F0F12]" />
                 ) : (
-                  <Play size={28} className="translate-x-[1px] fill-black" />
+                  <Play size={28} className="translate-x-[1px] fill-[#0F0F12]" />
                 )}
               </button>
               <button
                 onClick={next}
-                className="text-white/70 transition-colors hover:text-white"
+                className="text-white/60 transition-colors hover:text-white"
                 aria-label="Next"
               >
                 <SkipForward size={24} className="fill-current" />
               </button>
               <button
                 onClick={toggleRepeat}
-                className={`transition-colors ${repeat ? "text-nova-cyan" : "text-white/45 hover:text-white"}`}
+                className={`transition-colors ${repeat ? "text-nova-blue" : "text-white/35 hover:text-white/70"}`}
                 aria-label="Repeat"
               >
                 <Repeat size={20} />
@@ -168,14 +168,14 @@ export default function NowPlayingPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.15 }}
           >
-            <div className="glass-strong rounded-2xl p-5">
+            <div className="glass rounded-2xl p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-white/40">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-white/30">
                   Up Next
                 </h2>
                 <button
                   onClick={toggleQueue}
-                  className="flex items-center gap-1.5 text-xs font-medium text-nova-cyan transition-colors hover:text-white"
+                  className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 transition-colors hover:text-white/70"
                 >
                   <ListMusic size={14} />
                   Open Queue
@@ -183,7 +183,7 @@ export default function NowPlayingPage() {
               </div>
 
               {queue.length === 0 ? (
-                <p className="py-8 text-center text-sm text-white/30">
+                <p className="py-8 text-center text-sm text-white/20">
                   Queue is empty. Add songs to get started.
                 </p>
               ) : (
@@ -198,17 +198,17 @@ export default function NowPlayingPage() {
                           active ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"
                         }`}
                       >
-                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-white/5">
+                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-white/[0.04] ring-1 ring-white/[0.06]">
                           {s.thumbnail && (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={s.thumbnail} alt="" className="h-full w-full object-cover" />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className={`truncate text-sm font-medium ${active ? "text-nova-cyan" : "text-white"}`}>
+                          <p className={`truncate text-[13px] font-medium ${active ? "text-nova-blue" : "text-white/75"}`}>
                             {s.title}
                           </p>
-                          <p className="truncate text-xs text-white/40">{s.artist}</p>
+                          <p className="truncate text-[11px] text-white/30">{s.artist}</p>
                         </div>
                       </button>
                     );

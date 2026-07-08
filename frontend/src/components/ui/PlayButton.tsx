@@ -33,12 +33,12 @@ export default function PlayButton({
       whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.94 }}
       aria-label={label ?? (playing ? "Pause" : "Play")}
-      className={`flex ${s.box} items-center justify-center rounded-full bg-gradient-to-br from-nova-blue to-nova-cyan text-black shadow-glow-cyan transition-shadow hover:shadow-glow-blue ${className}`}
+      className={`flex ${s.box} items-center justify-center rounded-full bg-white text-[#0F0F12] shadow-md transition-shadow hover:shadow-lg ${className}`}
     >
       {playing ? (
-        <Pause size={s.icon} className="fill-black" />
+        <Pause size={s.icon} className="fill-[#F5F0EB]" />
       ) : (
-        <Play size={s.icon} className="translate-x-[1px] fill-black" />
+        <Play size={s.icon} className="translate-x-[1px] fill-[#F5F0EB]" />
       )}
     </motion.button>
   );

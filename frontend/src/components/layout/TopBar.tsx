@@ -1,7 +1,6 @@
 "use client";
 
-// Nova top bar: search field (routes to /search), ⌘K command-palette trigger,
-// a Premium pill (links to /premium), and the user profile chip.
+// Nova top bar — refined v5. Cleaner search, better spacing, muted controls.
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -19,7 +18,6 @@ export default function TopBar() {
   const pathname = usePathname();
   const prevPathname = useRef(pathname);
 
-  // Clear TopBar search input only when navigating TO /search from another route.
   useEffect(() => {
     if (pathname === "/search" && prevPathname.current !== "/search") {
       setQ("");
@@ -34,57 +32,61 @@ export default function TopBar() {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex h-20 items-center gap-3 border-b border-white/[0.06] bg-nova-bg/50 px-5 backdrop-blur-2xl sm:px-8">
-      {/* Hamburger — visible only on mobile, toggles sidebar drawer */}
+    <header className="sticky top-0 z-20 flex h-[72px] items-center gap-3 border-b border-white/[0.06] bg-nova-bg/60 px-5 backdrop-blur-2xl sm:px-8">
+      {/* Hamburger — mobile only */}
       <motion.button
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale: 0.92 }}
         onClick={toggleSidebar}
-        className="flex items-center justify-center text-white/50 transition-colors hover:text-white md:hidden"
+        className="flex items-center justify-center text-white/40 transition-colors hover:text-white/80 md:hidden"
         aria-label="Open menu"
       >
-        <Menu size={22} />
+        <Menu size={20} />
       </motion.button>
 
+      {/* Search */}
       <form onSubmit={submit} className="relative w-full max-w-md">
         <Search
-          size={16}
-          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/40"
+          size={15}
+          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
         />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search songs, artists, albums…"
-          className="w-full rounded-full border border-white/[0.08] bg-white/[0.03] py-2.5 pl-10 pr-4 text-sm font-medium text-white placeholder:text-white/40 outline-none backdrop-blur-xl transition-colors focus:border-nova-cyan/40 focus:shadow-glow-cyan"
+          className="w-full rounded-xl border border-white/[0.06] bg-white/[0.03] py-2 pl-10 pr-4 text-[13px] font-medium text-white placeholder:text-white/35 outline-none backdrop-blur-xl transition-all focus:border-white/[0.12] focus:bg-white/[0.05]"
         />
       </form>
 
+      {/* Command palette trigger */}
       <motion.button
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale: 0.92 }}
         onClick={openCommand}
-        className="hidden items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs font-medium text-white/50 transition-colors hover:text-white sm:flex"
+        className="hidden items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2.5 py-1.5 text-[11px] font-medium text-white/40 transition-colors hover:text-white/70 sm:flex"
       >
-        <Command size={13} />
+        <Command size={12} />
         <span>K</span>
       </motion.button>
 
-      <div className="ml-auto flex items-center gap-3">
-        <motion.div whileTap={{ scale: 0.93 }} className="hidden md:block">
+      <div className="ml-auto flex items-center gap-2.5">
+        {/* Premium button */}
+        <motion.div whileTap={{ scale: 0.95 }} className="hidden md:block">
           <Link
             href="/premium"
-            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-nova-blue to-nova-cyan px-4 py-2 text-xs font-semibold text-black shadow-glow-blue transition-transform hover:scale-[1.03]"
+            className="flex items-center gap-1.5 rounded-lg bg-nova-blue/90 px-3.5 py-1.5 text-[12px] font-semibold text-white transition-all hover:bg-nova-blue"
           >
-            <Sparkles size={13} />
+            <Sparkles size={12} />
             Premium
           </Link>
         </motion.div>
 
+        {/* User chip */}
         {user && (
           <motion.div whileTap={{ scale: 0.97 }}>
             <Link
               href="/profile"
-              className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] py-1 pl-1 pr-3 backdrop-blur-xl transition-colors hover:border-white/20"
+              className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.025] py-1 pl-1 pr-2.5 backdrop-blur-xl transition-colors hover:bg-white/[0.05]"
             >
-              <div className="h-8 w-8 overflow-hidden rounded-full ring-1 ring-white/10">
+              <div className="h-7 w-7 overflow-hidden rounded-full ring-1 ring-white/10">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={user.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`}
@@ -92,7 +94,7 @@ export default function TopBar() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <span className="hidden text-sm font-medium text-white/80 sm:block">
+              <span className="hidden text-[13px] font-medium text-white/70 sm:block">
                 {user.name.split(" ")[0]}
               </span>
             </Link>
